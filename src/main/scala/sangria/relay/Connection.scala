@@ -35,7 +35,7 @@ object Connection {
     val edgeType = ObjectType[Ctx, Edge[Val]](name + "Edge", "An edge in a connection.",
       () => {
         List[Field[Ctx, Edge[Val]]](
-          Field("node", nodeType, Some("The item at the end of the edge."), resolve = _.value.node),
+          Field("node", OptionType(nodeType), Some("The item at the end of the edge."), resolve = _.value.node),
           Field("cursor", StringType, Some("A cursor for use in pagination."), resolve = _.value.cursor)
         ) ++ edgeFields
       })
@@ -70,10 +70,10 @@ object Connection {
 
   def empty[T] = DefaultConnection(PageInfo.empty, Vector.empty[Edge[T]])
 
-  def connectionFromFutureSeq[T](coll: Future[Seq[T]], args: ConnectionArgs)(implicit ec: ExecutionContext) =
+  def connectionFromFutureSeq[T](coll: Future[Seq[Option[T]]], args: ConnectionArgs)(implicit ec: ExecutionContext) =
     coll map (connectionFromSeq(_, args))
 
-  def connectionFromSeq[T](coll: Seq[T], args: ConnectionArgs) = {
+  def connectionFromSeq[T](coll: Seq[Option[T]], args: ConnectionArgs) = {
     val edges = coll.zipWithIndex map {case (elem, idx) => Edge(elem, offsetToCursor(idx))}
 
     val begin = math.max(getOffset(args.after, -1), -1) + 1
@@ -106,7 +106,7 @@ object Connection {
   }
 
   def cursorForObjectInConnection[T](coll: Seq[T], obj: T) = {
-    val idx = coll.indexOf(obj)
+    val idx = coll.indexOf(Some(obj))
 
     if (idx  >= 0) Some(offsetToCursor(idx)) else None
   }
@@ -127,15 +127,16 @@ case class ConnectionDefinition[Ctx, Conn, Val](edgeType: ObjectType[Ctx, Edge[V
 case class DefaultConnection[T](pageInfo: PageInfo, edges: Seq[Edge[T]]) extends Connection[T]
 
 trait Edge[T] {
-  def node: T
+  def node: Option[T]
   def cursor: String
 }
 
 object Edge {
-  def apply[T](node: T, cursor: String) = DefaultEdge(node, cursor)
+  def apply[T](node: Option[T], cursor: String) = DefaultEdge(node, cursor)
+  def apply[T](node: T, cursor: String) = DefaultEdge(Some(node), cursor)
 }
 
-case class DefaultEdge[T](node: T, cursor: String) extends Edge[T]
+case class DefaultEdge[T](node: Option[T], cursor: String) extends Edge[T]
 
 case class PageInfo(
   hasNextPage: Boolean = false,

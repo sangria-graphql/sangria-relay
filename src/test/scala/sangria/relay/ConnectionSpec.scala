@@ -26,7 +26,7 @@ class ConnectionSpec extends WordSpec with Matchers with AwaitSupport {
   val UserType: ObjectType[Repo, User] = ObjectType("User", () => fields(
     Field("name", OptionType(StringType), resolve = _.value.name),
     Field("friends", OptionType(friendConnection), arguments = Connection.Args.All,
-      resolve = ctx => Connection.connectionFromSeq(ctx.ctx.Users, ConnectionArgs(ctx)))
+      resolve = ctx => Connection.connectionFromSeq(ctx.ctx.Users map (Some(_)), ConnectionArgs(ctx)))
   ))
 
   val ConnectionDefinition(_, friendConnection) = Connection.definition[Repo, Connection, User](
