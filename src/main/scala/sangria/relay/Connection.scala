@@ -68,30 +68,29 @@ object Connection {
 
   def empty[T] = DefaultConnection(PageInfo.empty, Vector.empty[Edge[T]])
 
-  def connectionFromFutureSeq[T](coll: Future[Seq[T]], args: WithArguments)(implicit ec: ExecutionContext) =
+  def connectionFromFutureSeq[T](coll: Future[Seq[T]], args: ConnectionArgs)(implicit ec: ExecutionContext) =
     coll map (connectionFromSeq(_, args))
 
-  def connectionFromSeq[T](coll: Seq[T], args: WithArguments) = {
-    val connectionArgs = ConnectionArgs(args)
+  def connectionFromSeq[T](coll: Seq[T], args: ConnectionArgs) = {
     val edges = coll.zipWithIndex map {case (elem, idx) => Edge(elem, offsetToCursor(idx))}
 
-    val begin = math.max(getOffset(connectionArgs.after, -1), -1) + 1
-    val end = math.min(getOffset(connectionArgs.before, edges.size + 1), edges.size + 1)
+    val begin = math.max(getOffset(args.after, -1), -1) + 1
+    val end = math.min(getOffset(args.before, edges.size + 1), edges.size + 1)
 
     val slicedEdges = edges.slice(begin, end)
 
     if (slicedEdges.isEmpty) Connection.empty[T]
     else {
-      val firstPresliceCursor = edges.head.cursor
-      val lastPresliceCursor = edges.last.cursor
+      val firstPresliceCursor = slicedEdges.head.cursor
+      val lastPresliceCursor = slicedEdges.last.cursor
 
-      val withFirst = connectionArgs.first.fold(slicedEdges)(slicedEdges.take)
-      val withLast = connectionArgs.last.fold(withFirst)(withFirst.takeRight)
+      val withFirst = args.first.fold(slicedEdges)(slicedEdges.take)
+      val withLast = args.last.fold(withFirst)(withFirst.takeRight)
 
       if (withLast.isEmpty) Connection.empty[T]
       else {
         val firstEdge = withLast.head
-        val lastEdge = edges.last
+        val lastEdge = withLast.last
 
         DefaultConnection(
           PageInfo(
@@ -116,7 +115,7 @@ object Connection {
   private def offsetToCursor(offset: Int) = Base64.encode(CursorPrefix + offset)
 
   private def cursorToOffset(cursor: String) =
-    GlobalId.fromGlobalId(Base64.decode(cursor)).flatMap(id => Try(id.id.toInt).toOption)
+    GlobalId.fromGlobalId(cursor).flatMap(id => Try(id.id.toInt).toOption)
 
 
 }
@@ -170,4 +169,6 @@ object ConnectionArgs {
       args argOpt Connection.Args.After,
       args argOpt Connection.Args.First,
       args argOpt Connection.Args.Last)
+
+  val empty = ConnectionArgs()
 }
