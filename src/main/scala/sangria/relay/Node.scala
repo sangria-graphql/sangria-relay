@@ -15,24 +15,28 @@ trait Node {
 object Node {
   implicit def identifiableNodeType[T: Identifiable] = PossibleType.create[Node, T]
 
-  val IDArg = Argument("id", IDType, description = "The ID of an object")
+  object Args {
+    val ID = Argument("id", IDType, description = "The ID of an object")
 
-  def definitionsById[Ctx, Val, Res](resolve: (String, Context[Ctx, Val]) => Action[Ctx, Option[Res]], possibleTypes: => List[PossibleNodeObject[Ctx, Node]] = Nil) = {
+    val All = ID :: Nil
+  }
+
+  def definitionById[Ctx, Val, Res](resolve: (String, Context[Ctx, Val]) => Action[Ctx, Option[Res]], possibleTypes: => List[PossibleNodeObject[Ctx, Node]] = Nil) = {
     val interfaceType = InterfaceType("Node", "An object with an ID", fields[Ctx, Res](
       Field("id", IDType, Some("The id of the object."), resolve = ctx =>
         possibleTypes.find(_.objectType.isInstanceOf(ctx.value)).map(_.id.asInstanceOf[Identifiable[Res]].id(ctx.value)).getOrElse(throw UnknownPossibleType(ctx.value)))
     ))
 
     val nodeField = Field("node", OptionType(interfaceType), Some("Fetches an object given its ID"),
-      arguments = IDArg :: Nil,
+      arguments = Args.All,
       possibleTypes = possibleTypes map (pt => PossibleObject(pt.objectType)),
-      resolve = (ctx: Context[Ctx, Val]) => resolve(ctx.arg(IDArg), ctx))
+      resolve = (ctx: Context[Ctx, Val]) => resolve(ctx.arg(Args.ID), ctx))
 
     NodeDefinition(interfaceType, nodeField)
   }
 
-  def definitions[Ctx, Val, Res](resolve: (GlobalId, Context[Ctx, Val]) => Action[Ctx, Option[Res]], possibleTypes:  => List[PossibleNodeObject[Ctx, Node]] = Nil) =
-    definitionsById((id: String, ctx: Context[Ctx, Val]) => resolve(GlobalId.fromGlobalId(id) getOrElse (throw WrongGlobalId(id)), ctx), possibleTypes)
+  def definition[Ctx, Val, Res](resolve: (GlobalId, Context[Ctx, Val]) => Action[Ctx, Option[Res]], possibleTypes:  => List[PossibleNodeObject[Ctx, Node]] = Nil) =
+    definitionById((id: String, ctx: Context[Ctx, Val]) => resolve(GlobalId.fromGlobalId(id) getOrElse (throw WrongGlobalId(id)), ctx), possibleTypes)
 
   def globalIdField[Ctx, Val : Identifiable](typeName: String) =
     Field("id", IDType, Some("The ID of an object"),
