@@ -1,18 +1,22 @@
-## Sangria Relay Support
+![Scagria Relay Support](https://raw.githubusercontent.com/sangria-graphql/sangria-logo/master/sangria-relay-logo.png)
 
-[Sangria](http://sangria-graphql.org/) is a scala [GraphQL](http://facebook.github.io/graphql/) library. sangria-relay is a library to help construct a sangria server supporting react-relay.
+**sangria-relay** is a library to help construct a sangria server supporting react-relay. [Sangria](http://sangria-graphql.org/) is a scala [GraphQL](http://facebook.github.io/graphql/) library.
 
 [![Build Status](https://travis-ci.org/sangria-graphql/sangria-relay.svg?branch=master)](https://travis-ci.org/sangria-graphql/sangria-relay) [![Coverage Status](http://coveralls.io/repos/sangria-graphql/sangria-relay/badge.svg?branch=master&service=github)](http://coveralls.io/github/sangria-graphql/sangria-relay?branch=master) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-relay_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-relay_2.11) [![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
 
 [![Join the chat at https://gitter.im/sangria-graphql/sangria](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sangria-graphql/sangria?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-SBT Configuration (coming very soon):
+SBT Configuration:
 
     libraryDependencies += "org.sangria-graphql" %% "sangria-relay" % "0.3.0"
 
 More info and the documentation can be found in the project home page:
 
 [http://sangria-graphql.org](http://sangria-graphql.org/)
+
+For some examples you can look at the StarWars tests, which nicely demonstrate most of the features of the library (more detailed documentation is coming soon):
+
+[https://github.com/sangria-graphql/sangria-relay/tree/master/src/test/scala/sangria/relay/starWars](https://github.com/sangria-graphql/sangria-relay/tree/master/src/test/scala/sangria/relay/starWars)
 
 ## Mailing List
 
