@@ -3,13 +3,13 @@ package sangria.relay
 import org.scalatest.{Matchers, WordSpec}
 import sangria.execution.Executor
 import sangria.parser.QueryParser
-import sangria.relay.util.AwaitSupport
+import sangria.relay.util.{ResultHelper, AwaitSupport}
 import sangria.schema._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Success
 
-class NodeSpec extends WordSpec with Matchers with AwaitSupport {
+class NodeSpec extends WordSpec with Matchers with AwaitSupport with ResultHelper {
   case class User(id: String, name: String) extends Node
   case class Photo(photoId: String, width: Int)
 
@@ -310,13 +310,4 @@ class NodeSpec extends WordSpec with Matchers with AwaitSupport {
       }
     }
   }
-
-  implicit class ResultHelper(any: Any) {
-    def getProp(name: String) = any.asInstanceOf[Map[String, Any]](name)
-    def asList = any.asInstanceOf[List[Any]]
-  }
-
-//  implicit def resultHelper(any: Any) = new {
-
-//  }
 }

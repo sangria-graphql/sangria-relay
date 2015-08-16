@@ -68,7 +68,6 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
           }
         """)
 
-
       Executor.execute(schema, doc, userContext = new Repo).await should be  (
         Map(
           "data" -> Map(
@@ -97,7 +96,6 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
             }
           }
         """)
-
 
       Executor.execute(schema, doc, userContext = new Repo).await should be  (
         Map(

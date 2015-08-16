@@ -9,6 +9,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 import scala.util.Try
 
+import scala.annotation.implicitNotFound
+
 trait Connection[T] {
   def pageInfo: PageInfo
   def edges: Seq[Edge[T]]
@@ -145,6 +147,7 @@ object PageInfo {
   def empty = PageInfo()
 }
 
+@implicitNotFound("Type ${T} can't be used as a Connection. Please consider defining implicit instance of sangria.relay.ConnectionLike for type ${T} or extending sangria.relay.Connection trait.")
 trait ConnectionLike[T[_], E] {
   def pageInfo(conn: T[E]): PageInfo
   def edges(conn: T[E]): Seq[Edge[E]]

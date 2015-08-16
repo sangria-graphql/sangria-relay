@@ -76,7 +76,7 @@ case class WrongGlobalId(id: String) extends Exception(s"Invalid Global ID: $id"
 
 case class NodeDefinition[Ctx, Val, Res](interface: InterfaceType[Ctx, Res], field: Field[Ctx, Val])
 
-@implicitNotFound("Type ${T} is not identifiable. Please consider defining implicit instance of Identifiable for type ${T} or extending sangria.relay.Node trait.")
+@implicitNotFound("Type ${T} is not identifiable. Please consider defining implicit instance of sangria.relay.Identifiable for type ${T} or extending sangria.relay.Node trait.")
 trait Identifiable[T] {
   def id(value: T): String
 }
