@@ -1,0 +1,322 @@
+package sangria.relay
+
+import org.scalatest.{Matchers, WordSpec}
+import sangria.execution.Executor
+import sangria.parser.QueryParser
+import sangria.relay.util.AwaitSupport
+import sangria.schema._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Success
+
+class NodeSpec extends WordSpec with Matchers with AwaitSupport {
+  case class User(id: String, name: String) extends Node
+  case class Photo(photoId: String, width: Int)
+
+  object Photo {
+    implicit object PhotoId extends Identifiable[Photo] {
+      def id(value: Photo) = value.photoId
+    }
+  }
+
+  class Repo {
+    val Users = List(
+      User("1", "John Doe"),
+      User("2", "Jane Smith")
+    )
+
+    val Photos = List(
+      Photo("3", 300),
+      Photo("4", 400)
+    )
+  }
+
+  val NodeDefinition(nodeInterface, nodeField) = Node.definitionsById((id: String, ctx: Context[Repo, Unit]) => {
+    if (ctx.ctx.Users exists (_.id == id)) ctx.ctx.Users.find(_.id == id)
+    else ctx.ctx.Photos.find(_.photoId == id)
+  }, Node.possibleNodeTypes[Repo, Node](UserType, PhotoType))
+
+  val UserType: ObjectType[Unit, User] = ObjectType("User",
+    fields[Unit, User](
+      Field("id", IDType, resolve = _.value.id),
+      Field("name", OptionType(StringType), resolve = _.value.name)),
+    interfaces[Unit, User](nodeInterface))
+
+  val PhotoType: ObjectType[Unit, Photo] = ObjectType("Photo",
+    fields[Unit, Photo](
+      Field("id", IDType, resolve = _.value.photoId),
+      Field("width", OptionType(IntType), resolve = _.value.width)),
+    interfaces[Unit, Photo](nodeInterface))
+
+  val QueryType: ObjectType[Repo, Unit] = ObjectType("Query", fields[Repo, Unit](nodeField))
+
+  val schema = Schema(QueryType)
+
+  "Node interface and fields" should {
+    "Allows refetching" should {
+      "Gets the correct ID for users" in {
+        val Success(doc) = QueryParser.parse(
+          """
+            {
+              node(id: "1") {
+                id
+              }
+            }
+          """)
+
+
+        Executor.execute(schema, doc, userContext = new Repo).await should be  (
+          Map(
+            "data" -> Map(
+              "node" -> Map("id" -> "1"))))
+      }
+
+      "Gets the correct ID for photos" in {
+        val Success(doc) = QueryParser.parse(
+          """
+            {
+              node(id: "4") {
+                id
+              }
+            }
+          """)
+
+
+        Executor.execute(schema, doc, userContext = new Repo).await should be  (
+          Map(
+            "data" -> Map(
+              "node" -> Map("id" -> "4"))))
+      }
+
+      "Gets the correct width for photos" in {
+        val Success(doc) = QueryParser.parse(
+          """
+            {
+              node(id: "4") {
+                id
+                ... on Photo {
+                  width
+                }
+              }
+            }
+          """)
+
+
+        Executor.execute(schema, doc, userContext = new Repo).await should be  (
+          Map(
+            "data" -> Map(
+              "node" -> Map(
+                "id" -> "4",
+                "width" -> 400))))
+      }
+
+      "Gets the correct type name for users" in {
+        val Success(doc) = QueryParser.parse(
+          """
+            {
+              node(id: "1") {
+                id
+                __typename
+              }
+            }
+          """)
+
+
+        Executor.execute(schema, doc, userContext = new Repo).await should be  (
+          Map(
+            "data" -> Map(
+              "node" -> Map(
+                "id" -> "1",
+                "__typename" -> "User"))))
+      }
+
+      "Gets the correct type name for photos" in {
+        val Success(doc) = QueryParser.parse(
+          """
+            {
+              node(id: "4") {
+                id
+                __typename
+              }
+            }
+          """)
+
+
+        Executor.execute(schema, doc, userContext = new Repo).await should be  (
+          Map(
+            "data" -> Map(
+              "node" -> Map(
+                "id" -> "4",
+                "__typename" -> "Photo"))))
+      }
+
+      "Ignores photo fragments on user" in {
+        val Success(doc) = QueryParser.parse(
+          """
+            {
+              node(id: "1") {
+                id
+                ... on Photo {
+                  width
+                }
+              }
+            }
+          """)
+
+
+        Executor.execute(schema, doc, userContext = new Repo).await should be  (
+          Map(
+            "data" -> Map(
+              "node" -> Map(
+                "id" -> "1"))))
+      }
+
+      "Returns null for bad IDs" in {
+        val Success(doc) = QueryParser.parse(
+          """
+            {
+              node(id: "5") {
+                id
+              }
+            }
+          """)
+
+
+        Executor.execute(schema, doc, userContext = new Repo).await should be  (
+          Map(
+            "data" -> Map(
+              "node" -> null)))
+      }
+    }
+
+    "Correctly introspects" should {
+      "Lists all relevant abstract and concrete types" in {
+        val Success(doc) = QueryParser.parse(
+          """
+            {
+              __schema {
+                types {
+                  name
+                }
+              }
+            }
+          """)
+
+        Executor.execute(schema, doc, userContext = new Repo).await
+          .getProp("data").getProp("__schema").getProp("types").asList.map(_.getProp("name")) should (
+            contain("Node") and contain("User") and contain("Photo"))
+      }
+
+      "Has correct node interface" in {
+        val Success(doc) = QueryParser.parse(
+          """
+            {
+              __type(name: "Node") {
+                name
+                kind
+                fields {
+                  name
+                  type {
+                    kind
+                    ofType {
+                      name
+                      kind
+                    }
+                  }
+                }
+              }
+            }
+          """)
+
+
+        Executor.execute(schema, doc, userContext = new Repo).await should be  (
+          Map(
+            "data" -> Map(
+              "__type" -> Map(
+                "name" -> "Node",
+                "kind" -> "INTERFACE",
+                "fields" -> List(
+                  Map(
+                    "name" -> "id",
+                    "type" -> Map(
+                      "kind" -> "NON_NULL",
+                      "ofType" -> Map(
+                        "name" -> "ID",
+                        "kind" -> "SCALAR"
+                      )
+                    )
+                  )
+                )
+              ))))
+      }
+
+      "Has correct node root field" in {
+        val Success(doc) = QueryParser.parse(
+          """
+            {
+              __schema {
+                queryType {
+                  fields {
+                    name
+                    type {
+                      name
+                      kind
+                    }
+                    args {
+                      name
+                      type {
+                        kind
+                        ofType {
+                          name
+                          kind
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          """)
+
+
+        Executor.execute(schema, doc, userContext = new Repo).await should be  (
+          Map(
+            "data" -> Map(
+              "__schema" -> Map(
+                "queryType" -> Map(
+                  "fields" -> List(
+                    Map(
+                      "name" -> "node",
+                      "type" -> Map(
+                        "name" -> "Node",
+                        "kind" -> "INTERFACE"
+                      ),
+                      "args" -> List(
+                        Map(
+                          "name" -> "id",
+                          "type" -> Map(
+                            "kind" -> "NON_NULL",
+                            "ofType" -> Map(
+                              "name" -> "ID",
+                              "kind" -> "SCALAR"
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              ))))
+      }
+    }
+  }
+
+  implicit class ResultHelper(any: Any) {
+    def getProp(name: String) = any.asInstanceOf[Map[String, Any]](name)
+    def asList = any.asInstanceOf[List[Any]]
+  }
+
+//  implicit def resultHelper(any: Any) = new {
+
+//  }
+}

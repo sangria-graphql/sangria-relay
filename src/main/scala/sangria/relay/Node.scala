@@ -17,7 +17,7 @@ object Node {
 
   val IDArg = Argument("id", IDType, description = "The ID of an object")
 
-  def definitionsById[Ctx, Val, Res](resolve: (String, Context[Ctx, Val]) => Action[Ctx, Res], possibleTypes: => List[PossibleNodeObject[Ctx, Node]] = Nil) = {
+  def definitionsById[Ctx, Val, Res](resolve: (String, Context[Ctx, Val]) => Action[Ctx, Option[Res]], possibleTypes: => List[PossibleNodeObject[Ctx, Node]] = Nil) = {
     val interfaceType = InterfaceType("Node", "An object with an ID", fields[Ctx, Res](
       Field("id", IDType, Some("The id of the object."), resolve = ctx =>
         possibleTypes.find(_.objectType.isInstanceOf(ctx.value)).map(_.id.asInstanceOf[Identifiable[Res]].id(ctx.value)).getOrElse(throw UnknownPossibleType(ctx.value)))
@@ -31,7 +31,7 @@ object Node {
     NodeDefinition(interfaceType, nodeField)
   }
 
-  def definitions[Ctx, Val, Res](resolve: (GlobalId, Context[Ctx, Val]) => Action[Ctx, Res], possibleTypes:  => List[PossibleNodeObject[Ctx, Node]] = Nil) =
+  def definitions[Ctx, Val, Res](resolve: (GlobalId, Context[Ctx, Val]) => Action[Ctx, Option[Res]], possibleTypes:  => List[PossibleNodeObject[Ctx, Node]] = Nil) =
     definitionsById((id: String, ctx: Context[Ctx, Val]) => resolve(GlobalId.fromGlobalId(id) getOrElse (throw WrongGlobalId(id)), ctx), possibleTypes)
 
   def globalIdField[Ctx, Val : Identifiable](typeName: String) =
