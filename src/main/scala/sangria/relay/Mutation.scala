@@ -16,17 +16,7 @@ object Mutation {
   def fieldWithClientMutationId[Ctx, Val, Res : MutationLike : ClassTag](
         fieldName: String,
         typeName: String,
-        mutateAndGetPayload: (InputObjectType.InputObjectRes, Context[Ctx, Val]) => Res,
-        inputFields: List[InputField[_]] = Nil,
-        outputFields: List[Field[Ctx, Res]] = Nil) =
-    fieldWithClientMutationIdFut(fieldName, typeName, mutateAndGetPayload =
-      (in: InputObjectType.InputObjectRes, ctx: Context[Ctx, Val]) =>
-        Future.successful(mutateAndGetPayload(in, ctx)), inputFields, outputFields)
-
-  def fieldWithClientMutationIdFut[Ctx, Val, Res : MutationLike : ClassTag](
-        fieldName: String,
-        typeName: String,
-        mutateAndGetPayload: (InputObjectType.InputObjectRes, Context[Ctx, Val]) => Future[Res],
+        mutateAndGetPayload: (InputObjectType.InputObjectRes, Context[Ctx, Val]) => Action[Ctx, Res],
         inputFields: List[InputField[_]] = Nil,
         outputFields: List[Field[Ctx, Res]] = Nil) = {
     val inputType = InputObjectType(typeName + "Input",

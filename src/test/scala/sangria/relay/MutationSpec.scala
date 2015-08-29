@@ -38,7 +38,7 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
     }
   )
 
-  val simpleFutureMutation = Mutation.fieldWithClientMutationIdFut[Repo, Unit, Counter](
+  val simpleFutureMutation = Mutation.fieldWithClientMutationId[Repo, Unit, Counter](
     fieldName = "simpleFutureMutation",
     typeName = "SimpleFutureMutation",
     inputFields = List(InputField("num", OptionInputType(IntType))),
