@@ -20,12 +20,13 @@ object GlobalId {
    * used to create it.
    */
   def fromGlobalId(globalId: String) = {
-    val parts = Base64.decode(globalId).split(":")
+    val decoded = Base64.decode(globalId)
+    val idx = decoded.indexOf(":")
 
-    if (parts.size != 2)
+    if (idx < 0 && (decoded.size - 1) != idx)
       None
     else
-      Some(GlobalId(parts(0), parts(1)))
+      Some(GlobalId(decoded.substring(0, idx), decoded.substring(idx + 1)))
   }
 
   def unapply(globalId: String) = fromGlobalId(globalId)
