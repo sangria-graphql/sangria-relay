@@ -90,6 +90,11 @@ object StarWarsSchema {
     else None
   }, Node.possibleNodeTypes[ShipRepo, Node](ShipType))
 
+  def idFields[T : Identifiable](name: String) = fields[Unit, T](
+    Node.globalIdField(name),
+    Field("rawId", StringType, resolve = ctx => implicitly[Identifiable[T]].id(ctx.value))
+  )
+
   /**
    * We define our basic ship type.
    *
@@ -102,10 +107,10 @@ object StarWarsSchema {
   val ShipType: ObjectType[Unit, Ship] = ObjectType(
     "Ship",
     "A ship in the Star Wars saga",
+    interfaces[Unit, Ship](nodeInterface),
+    idFields[Ship]("Ship") ++
     fields[Unit, Ship](
-      Node.globalIdField("Ship"),
-      Field("name", OptionType(StringType), Some("The name of the ship."), resolve = _.value.name)),
-    interfaces[Unit, Ship](nodeInterface))
+      Field("name", OptionType(StringType), Some("The name of the ship."), resolve = _.value.name)))
 
   /**
    * We define a connection between a faction and its ships.
@@ -138,12 +143,12 @@ object StarWarsSchema {
   val FactionType: ObjectType[ShipRepo, Faction] = ObjectType(
     "Faction",
     "A faction in the Star Wars saga",
+    interfaces[ShipRepo, Faction](nodeInterface),
     fields[ShipRepo, Faction](
       Node.globalIdField[ShipRepo, Faction]("Faction"),
       Field("name", OptionType(StringType), Some("The name of the faction."), resolve = _.value.name),
       Field("ships", OptionType(shipConnection), arguments = Connection.Args.All,
-        resolve = ctx => Connection.connectionFromSeq(ctx.value.ships map ctx.ctx.getShip, ConnectionArgs(ctx)))),
-    interfaces[ShipRepo, Faction](nodeInterface))
+        resolve = ctx => Connection.connectionFromSeq(ctx.value.ships map ctx.ctx.getShip, ConnectionArgs(ctx)))))
 
   /**
    * This is the type that will be the root of our query, and the

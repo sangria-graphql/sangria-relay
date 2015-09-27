@@ -5,6 +5,7 @@ import sangria.execution.Executor
 import sangria.parser.QueryParser
 import sangria.relay.starWars.StarWarsData.ShipRepo
 import sangria.relay.util.AwaitSupport
+import sangria.integration.InputUnmarshaller.mapVars
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Success
@@ -28,7 +29,7 @@ class StarWarsMutationSpec extends WordSpec with Matchers with AwaitSupport {
           }
         """)
 
-      val args = Map(
+      val vars = mapVars(
         "input" -> Map(
           "shipName" -> "B-Wing",
           "factionId" -> "1",
@@ -36,7 +37,7 @@ class StarWarsMutationSpec extends WordSpec with Matchers with AwaitSupport {
         )
       )
       
-      Executor.execute(StarWarsSchema.schema, doc, arguments = Some(args), userContext = new ShipRepo).await should be(
+      Executor.execute(StarWarsSchema.schema, doc, variables = vars, userContext = new ShipRepo).await should be(
         Map(
           "data" -> Map(
             "introduceShip" -> Map(

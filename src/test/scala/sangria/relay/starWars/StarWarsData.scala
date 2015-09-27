@@ -13,7 +13,7 @@ import sangria.relay.{Connection, ConnectionLike, Identifiable, Node}
  */
 object StarWarsData {
   case class Ship(id: String, name: String) extends Node
-  case class Faction(id: String, name: String, ships: List[String])
+  case class Faction(id: String, name: String, ships: List[String]) extends Node
 
   object Faction {
     implicit object FactionIdentifiable extends Identifiable[Faction] {

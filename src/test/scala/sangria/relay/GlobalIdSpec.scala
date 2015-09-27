@@ -37,17 +37,15 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
     else ctx.ctx.Photos.find(_.photoId == id.id)
   }, Node.possibleNodeTypes[Repo, Node](UserType, PhotoType))
 
-  val UserType: ObjectType[Unit, User] = ObjectType("User",
+  val UserType: ObjectType[Unit, User] = ObjectType("User", interfaces[Unit, User](nodeInterface),
     fields[Unit, User](
       Node.globalIdField("User"),
-      Field("name", OptionType(StringType), resolve = _.value.name)),
-    interfaces[Unit, User](nodeInterface))
+      Field("name", OptionType(StringType), resolve = _.value.name)))
 
-  val PhotoType: ObjectType[Unit, Photo] = ObjectType("Photo",
+  val PhotoType: ObjectType[Unit, Photo] = ObjectType("Photo", interfaces[Unit, Photo](nodeInterface),
     fields[Unit, Photo](
       Node.globalIdField("Photo"),
-      Field("width", OptionType(IntType), resolve = _.value.width)),
-    interfaces[Unit, Photo](nodeInterface))
+      Field("width", OptionType(IntType), resolve = _.value.width)))
 
   val QueryType: ObjectType[Repo, Unit] = ObjectType("Query",
     fields[Repo, Unit](
