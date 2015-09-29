@@ -105,7 +105,7 @@ object Connection {
     }
   }
 
-  def cursorForObjectInConnection[T](coll: Seq[T], obj: T) = {
+  def cursorForObjectInConnection[T, E](coll: Seq[Option[T]], obj: E)(implicit ev: E <:< T) = {
     val idx = coll.indexOf(Some(obj))
 
     if (idx  >= 0) Some(offsetToCursor(idx)) else None
