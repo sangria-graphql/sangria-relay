@@ -1,3 +1,7 @@
+## 0.4.1 (2015-10-03)
+
+* Updated sangria to v0.4.1
+
 ## 0.4.0 (2015-09-27)
 
 * Updated sangria to v0.4.0
