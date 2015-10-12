@@ -1,6 +1,6 @@
 ## 0.4.2 (2015-10-12)
 
-* All function that generate fields not also have `tags` and `complexity` arguments (#7, #8)
+* All functions that generate fields now also have `tags` and `complexity` arguments (#7, #8)
 * Connection adapter for seq slices (#6)
 * Updated sangria to v0.4.2
 
