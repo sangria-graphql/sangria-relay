@@ -25,7 +25,7 @@ class NodePluralSpec extends WordSpec with Matchers with AwaitSupport {
         fieldType = OptionType(UserType),
         argName = "userNames",
         argType = StringType,
-        resolveSingleInput = (userName: String, ctx: Context[Unit, Unit]) =>
+        resolveSingleInput = (userName: String, ctx: Context[Unit, Unit]) ⇒
           Some(User(userName, "www.facebook.com/" + userName))
       )
     ))

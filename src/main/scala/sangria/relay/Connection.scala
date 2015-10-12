@@ -29,11 +29,11 @@ object Connection {
   def definition[Ctx, Conn[_], Val](
     name: String,
     nodeType: ObjectType[Ctx, Val],
-    edgeFields: => List[Field[Ctx, Edge[Val]]] = Nil,
-    connectionFields: => List[Field[Ctx, Conn[Val]]] = Nil
+    edgeFields: ⇒ List[Field[Ctx, Edge[Val]]] = Nil,
+    connectionFields: ⇒ List[Field[Ctx, Conn[Val]]] = Nil
   )(implicit connEv: ConnectionLike[Conn, Val], classEv: ClassTag[Conn[Val]]) = {
     val edgeType = ObjectType[Ctx, Edge[Val]](name + "Edge", "An edge in a connection.",
-      () => {
+      () ⇒ {
         List[Field[Ctx, Edge[Val]]](
           Field("node", OptionType(nodeType), Some("The item at the end of the edge."), resolve = _.value.node),
           Field("cursor", StringType, Some("A cursor for use in pagination."), resolve = _.value.cursor)
@@ -41,10 +41,11 @@ object Connection {
       })
 
     val connectionType = ObjectType[Ctx, Conn[Val]](name + "Connection", "A connection to a list of items.",
-      () => {
+      () ⇒ {
         List[Field[Ctx, Conn[Val]]](
-          Field("pageInfo", PageInfoType, Some("Information to aid in pagination."), resolve = ctx => connEv.pageInfo(ctx.value)),
-          Field("edges", OptionType(ListType(OptionType(edgeType))), Some("Information to aid in pagination."), resolve = ctx => connEv.edges(ctx.value) map (Some(_)))
+          Field("pageInfo", PageInfoType, Some("Information to aid in pagination."), resolve = ctx ⇒ connEv.pageInfo(ctx.value)),
+          Field("edges", OptionType(ListType(OptionType(edgeType))), Some("Information to aid in pagination."),
+            resolve = ctx ⇒ connEv.edges(ctx.value) map (Some(_)))
         ) ++ connectionFields
       })
 
@@ -74,7 +75,7 @@ object Connection {
     coll map (connectionFromSeq(_, args))
 
   def connectionFromSeq[T](coll: Seq[Option[T]], args: ConnectionArgs) = {
-    val edges = coll.zipWithIndex map {case (elem, idx) => Edge(elem, offsetToCursor(idx))}
+    val edges = coll.zipWithIndex map {case (elem, idx) ⇒ Edge(elem, offsetToCursor(idx))}
 
     val begin = math.max(getOffset(args.after, -1), -1) + 1
     val end = math.min(getOffset(args.before, edges.size + 1), edges.size + 1)
@@ -117,7 +118,7 @@ object Connection {
   private def offsetToCursor(offset: Int) = Base64.encode(CursorPrefix + offset)
 
   private def cursorToOffset(cursor: String) =
-    GlobalId.fromGlobalId(cursor).flatMap(id => Try(id.id.toInt).toOption)
+    GlobalId.fromGlobalId(cursor).flatMap(id ⇒ Try(id.id.toInt).toOption)
 
 
 }

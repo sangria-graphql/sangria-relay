@@ -29,7 +29,7 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
     typeName = "SimpleMutation",
     inputFields = List(InputField("num", OptionInputType(IntType))),
     outputFields = fields(Field("num", OptionType(IntType), resolve = _.value.num)),
-    mutateAndGetPayload = (input, ctx) => {
+    mutateAndGetPayload = (input, ctx) ⇒ {
       val counter = Counter(
         id = input(Mutation.ClientMutationIdFieldName).asInstanceOf[String],
         num = input get "num" map (_.asInstanceOf[Int]) getOrElse 1)
@@ -43,7 +43,7 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
     typeName = "SimpleFutureMutation",
     inputFields = List(InputField("num", OptionInputType(IntType))),
     outputFields = fields(Field("num", OptionType(IntType), resolve = _.value.num)),
-    mutateAndGetPayload = (input, ctx) => {
+    mutateAndGetPayload = (input, ctx) ⇒ {
       val counter = Counter(
         id = input(Mutation.ClientMutationIdFieldName).asInstanceOf[String],
         num = input get "num" map (_.asInstanceOf[Int]) getOrElse 1)

@@ -31,7 +31,7 @@ class NodeSpec extends WordSpec with Matchers with AwaitSupport with ResultHelpe
     )
   }
 
-  val NodeDefinition(nodeInterface, nodeField) = Node.definitionById((id: String, ctx: Context[Repo, Unit]) => {
+  val NodeDefinition(nodeInterface, nodeField) = Node.definitionById((id: String, ctx: Context[Repo, Unit]) ⇒ {
     if (ctx.ctx.Users exists (_.id == id)) ctx.ctx.Users.find(_.id == id)
     else ctx.ctx.Photos.find(_.photoId == id)
   }, Node.possibleNodeTypes[Repo, Node](UserType, PhotoType))

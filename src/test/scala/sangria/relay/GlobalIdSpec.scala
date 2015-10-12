@@ -32,7 +32,7 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
     )
   }
 
-  val NodeDefinition(nodeInterface, nodeField) = Node.definition((id: GlobalId, ctx: Context[Repo, Unit]) => {
+  val NodeDefinition(nodeInterface, nodeField) = Node.definition((id: GlobalId, ctx: Context[Repo, Unit]) ⇒ {
     if (id.typeName == "User") ctx.ctx.Users.find(_.id == id.id)
     else ctx.ctx.Photos.find(_.photoId == id.id)
   }, Node.possibleNodeTypes[Repo, Node](UserType, PhotoType))
@@ -51,7 +51,7 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
     fields[Repo, Unit](
       nodeField,
       Field("allObjects", OptionType(ListType(nodeInterface)),
-        resolve = ctx => ctx.ctx.Users ++ ctx.ctx.Photos)))
+        resolve = ctx ⇒ ctx.ctx.Users ++ ctx.ctx.Photos)))
 
   val schema = Schema(QueryType)
 
