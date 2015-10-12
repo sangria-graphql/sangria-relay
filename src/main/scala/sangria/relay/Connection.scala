@@ -71,39 +71,49 @@ object Connection {
 
   def empty[T] = DefaultConnection(PageInfo.empty, Vector.empty[Edge[T]])
 
-  def connectionFromFutureSeq[T](coll: Future[Seq[Option[T]]], args: ConnectionArgs)(implicit ec: ExecutionContext) =
-    coll map (connectionFromSeq(_, args))
+  def connectionFromFutureSeq[T](seq: Future[Seq[Option[T]]], args: ConnectionArgs)(implicit ec: ExecutionContext): Future[Connection[T] ]=
+    seq map (connectionFromSeq(_, args))
 
-  def connectionFromSeq[T](coll: Seq[Option[T]], args: ConnectionArgs) = {
-    val edges = coll.zipWithIndex map {case (elem, idx) ⇒ Edge(elem, offsetToCursor(idx))}
+  def connectionFromSeq[T](seq: Seq[Option[T]], args: ConnectionArgs): Connection[T] =
+    connectionFromSeq(seq, args, SliceInfo(0, seq.size))
 
-    val begin = math.max(getOffset(args.after, -1), -1) + 1
-    val end = math.min(getOffset(args.before, edges.size + 1), edges.size + 1)
+  def connectionFromFutureSeq[T](seq: Future[Seq[Option[T]]], args: ConnectionArgs, sliceInfo: SliceInfo)(implicit ec: ExecutionContext): Future[Connection[T]] =
+    seq map (connectionFromSeq(_, args, sliceInfo))
 
-    val slicedEdges = edges.slice(begin, end)
+  def connectionFromSeq[T](seqSlice: Seq[Option[T]], args: ConnectionArgs, sliceInfo: SliceInfo): Connection[T] = {
+    import args._
+    import sliceInfo._
 
-    if (slicedEdges.isEmpty) Connection.empty[T]
-    else {
-      val firstPresliceCursor = slicedEdges.head.cursor
-      val lastPresliceCursor = slicedEdges.last.cursor
+    val sliceEnd = sliceStart + seqSlice.size
+    val beforeOffset = getOffset(before, size)
+    val afterOffset = getOffset(after, -1)
 
-      val withFirst = args.first.fold(slicedEdges)(slicedEdges.take)
-      val withLast = args.last.fold(withFirst)(withFirst.takeRight)
+    val startOffset = math.max(math.max(sliceStart - 1, afterOffset), -1) + 1
+    val endOffset = math.min(math.min(sliceEnd, beforeOffset), size)
 
-      if (withLast.isEmpty) Connection.empty[T]
-      else {
-        val firstEdge = withLast.head
-        val lastEdge = withLast.last
+    val actualEndOffset = first.fold(endOffset)(f ⇒ math.min(endOffset, startOffset + f))
+    val actualStartOffset = last.fold(startOffset)(l ⇒ math.max(startOffset, actualEndOffset - l))
 
-        DefaultConnection(
-          PageInfo(
-            startCursor = Some(firstEdge.cursor),
-            endCursor = Some(lastEdge.cursor),
-            hasPreviousPage = firstEdge.cursor != firstPresliceCursor,
-            hasNextPage = lastEdge.cursor != lastPresliceCursor),
-          withLast)
-      }
+    // If supplied slice is too large, trim it down before mapping over it.
+    val slice = seqSlice.slice(math.max(actualStartOffset - sliceStart, 0), seqSlice.size - (sliceEnd - actualEndOffset))
+
+    val edges = slice.zipWithIndex.map {
+      case (value, index) => Edge(value, offsetToCursor(actualStartOffset + index))
     }
+
+    val firstEdge = edges.headOption
+    val lastEdge = edges.lastOption
+    val lowerBound = after.fold(0)(_ ⇒ afterOffset + 1)
+    val upperBound = before.fold(size)(_ ⇒ beforeOffset)
+
+    DefaultConnection(
+      PageInfo(
+        startCursor = firstEdge map (_.cursor),
+        endCursor = lastEdge map (_.cursor),
+        hasPreviousPage = last.fold(false)(_ ⇒ actualStartOffset > lowerBound),
+        hasNextPage = first.fold(false)(_ ⇒ actualEndOffset < upperBound)),
+      edges
+    )
   }
 
   def cursorForObjectInConnection[T, E](coll: Seq[Option[T]], obj: E)(implicit ev: E <:< T) = {
@@ -115,13 +125,13 @@ object Connection {
   private def getOffset(cursor: Option[String], defaultOffset: Int) =
     cursor flatMap cursorToOffset getOrElse defaultOffset
 
-  private def offsetToCursor(offset: Int) = Base64.encode(CursorPrefix + offset)
+  def offsetToCursor(offset: Int) = Base64.encode(CursorPrefix + offset)
 
-  private def cursorToOffset(cursor: String) =
+  def cursorToOffset(cursor: String) =
     GlobalId.fromGlobalId(cursor).flatMap(id ⇒ Try(id.id.toInt).toOption)
-
-
 }
+
+case class SliceInfo(sliceStart: Int, size: Int)
 
 case class ConnectionDefinition[Ctx, Conn, Val](edgeType: ObjectType[Ctx, Edge[Val]], connectionType: ObjectType[Ctx, Conn])
 
