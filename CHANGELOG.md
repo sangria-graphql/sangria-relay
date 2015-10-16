@@ -1,3 +1,7 @@
+## 0.4.3 (2015-10-16)
+
+* Updated sangria to v0.4.3
+
 ## 0.4.2 (2015-10-12)
 
 * All functions that generate fields now also have `tags` and `complexity` arguments (#7, #8)

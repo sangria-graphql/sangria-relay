@@ -20,7 +20,7 @@ object Mutation {
         inputFields: List[InputField[_]] = Nil,
         outputFields: List[Field[Ctx, Res]] = Nil,
         tags: List[FieldTag] = Nil,
-        complexity: Option[(Args, Double) ⇒ Double] = None) = {
+        complexity: Option[(Ctx, Args, Double) ⇒ Double] = None) = {
     val inputType = InputObjectType(typeName + "Input",
       fields = inputFields :+ InputField(ClientMutationIdFieldName, StringType))
 

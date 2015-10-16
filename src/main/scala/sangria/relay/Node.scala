@@ -25,7 +25,7 @@ object Node {
       resolve: (String, Context[Ctx, Val]) ⇒ Action[Ctx, Option[Res]],
       possibleTypes: ⇒ List[PossibleNodeObject[Ctx, Node]] = Nil,
       tags: List[FieldTag] = Nil,
-      complexity: Option[(Args, Double) ⇒ Double] = None) = {
+      complexity: Option[(Ctx, Args, Double) ⇒ Double] = None) = {
     val interfaceType = InterfaceType("Node", "An object with an ID", fields[Ctx, Res](
       Field("id", IDType, Some("The id of the object."), resolve = ctx ⇒
         possibleTypes.find(_.objectType.isInstanceOf(ctx.value)).map(_.id.asInstanceOf[Identifiable[Res]].id(ctx.value)).getOrElse(throw UnknownPossibleType(ctx.value)))
@@ -45,14 +45,17 @@ object Node {
       resolve: (GlobalId, Context[Ctx, Val]) ⇒ Action[Ctx, Option[Res]],
       possibleTypes: ⇒ List[PossibleNodeObject[Ctx, Node]] = Nil,
       tags: List[FieldTag] = Nil,
-      complexity: Option[(Args, Double) ⇒ Double] = None) =
+      complexity: Option[(Ctx, Args, Double) ⇒ Double] = None) =
     definitionById(
       (id: String, ctx: Context[Ctx, Val]) ⇒ resolve(GlobalId.fromGlobalId(id) getOrElse (throw WrongGlobalId(id)), ctx),
       possibleTypes,
       tags,
       complexity)
 
-  def globalIdField[Ctx, Val : Identifiable](typeName: String, tags: List[FieldTag] = Nil, complexity: Option[(Args, Double) ⇒ Double] = None) =
+  def globalIdField[Ctx, Val : Identifiable](
+      typeName: String,
+      tags: List[FieldTag] = Nil,
+      complexity: Option[(Ctx, Args, Double) ⇒ Double] = None) =
     Field("id", IDType, Some("The ID of an object"),
       tags = tags,
       complexity = complexity,
@@ -66,7 +69,7 @@ object Node {
     resolveSingleInput: (T, Context[Ctx, Val]) ⇒ Option[Out],
     description: Option[String] = None,
     tags: List[FieldTag] = Nil,
-    complexity: Option[(Args, Double) ⇒ Double] = None
+    complexity: Option[(Ctx, Args, Double) ⇒ Double] = None
   )(implicit res: ArgumentType[T], ev1: ValidOutType[Res, Out]) =
     Field(fieldName, OptionType(ListType(OptionType(fieldType))), description,
       tags = tags,
@@ -82,7 +85,7 @@ object Node {
     resolveSingleInput: (T, Context[Ctx, Val]) ⇒ Future[Option[Out]],
     description: Option[String] = None,
     tags: List[FieldTag] = Nil,
-    complexity: Option[(Args, Double) ⇒ Double] = None
+    complexity: Option[(Ctx, Args, Double) ⇒ Double] = None
   )(implicit res: ArgumentType[T], ev1: ValidOutType[Res, Out], execCtx: ExecutionContext) =
     Field(fieldName, OptionType(ListType(OptionType(fieldType))), description,
       tags = tags,
