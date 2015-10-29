@@ -26,16 +26,26 @@ object Connection {
     val All = Before :: After :: First :: Last :: Nil
   }
 
+  def isValidNodeType[Val](nodeType: OutputType[Val]): Boolean = nodeType match {
+    case _: ScalarType[_] | _: EnumType[_] | _: CompositeType[_] ⇒ true
+    case OptionType(ofType) ⇒ isValidNodeType(ofType)
+    case _ ⇒ false
+  }
+
   def definition[Ctx, Conn[_], Val](
     name: String,
-    nodeType: ObjectType[Ctx, Val],
+    nodeType: OutputType[Val],
     edgeFields: ⇒ List[Field[Ctx, Edge[Val]]] = Nil,
     connectionFields: ⇒ List[Field[Ctx, Conn[Val]]] = Nil
   )(implicit connEv: ConnectionLike[Conn, Val], classEv: ClassTag[Conn[Val]]) = {
+    if (!isValidNodeType(nodeType))
+      throw new IllegalArgumentException("Node type is invalid. It must be either a Scalar, Enum, Object, Interface, Union, " +
+          "or a Non‐Null wrapper around one of those types. Notably, this field cannot return a list.")
+
     val edgeType = ObjectType[Ctx, Edge[Val]](name + "Edge", "An edge in a connection.",
       () ⇒ {
         List[Field[Ctx, Edge[Val]]](
-          Field("node", OptionType(nodeType), Some("The item at the end of the edge."), resolve = _.value.node),
+          Field("node", nodeType, Some("The item at the end of the edge."), resolve = _.value.node),
           Field("cursor", StringType, Some("A cursor for use in pagination."), resolve = _.value.cursor)
         ) ++ edgeFields
       })
@@ -71,16 +81,16 @@ object Connection {
 
   def empty[T] = DefaultConnection(PageInfo.empty, Vector.empty[Edge[T]])
 
-  def connectionFromFutureSeq[T](seq: Future[Seq[Option[T]]], args: ConnectionArgs)(implicit ec: ExecutionContext): Future[Connection[T] ]=
+  def connectionFromFutureSeq[T](seq: Future[Seq[T]], args: ConnectionArgs)(implicit ec: ExecutionContext): Future[Connection[T] ]=
     seq map (connectionFromSeq(_, args))
 
-  def connectionFromSeq[T](seq: Seq[Option[T]], args: ConnectionArgs): Connection[T] =
+  def connectionFromSeq[T](seq: Seq[T], args: ConnectionArgs): Connection[T] =
     connectionFromSeq(seq, args, SliceInfo(0, seq.size))
 
-  def connectionFromFutureSeq[T](seq: Future[Seq[Option[T]]], args: ConnectionArgs, sliceInfo: SliceInfo)(implicit ec: ExecutionContext): Future[Connection[T]] =
+  def connectionFromFutureSeq[T](seq: Future[Seq[T]], args: ConnectionArgs, sliceInfo: SliceInfo)(implicit ec: ExecutionContext): Future[Connection[T]] =
     seq map (connectionFromSeq(_, args, sliceInfo))
 
-  def connectionFromSeq[T](seqSlice: Seq[Option[T]], args: ConnectionArgs, sliceInfo: SliceInfo): Connection[T] = {
+  def connectionFromSeq[T](seqSlice: Seq[T], args: ConnectionArgs, sliceInfo: SliceInfo): Connection[T] = {
     import args._
     import sliceInfo._
 
@@ -116,8 +126,8 @@ object Connection {
     )
   }
 
-  def cursorForObjectInConnection[T, E](coll: Seq[Option[T]], obj: E)(implicit ev: E <:< T) = {
-    val idx = coll.indexOf(Some(obj))
+  def cursorForObjectInConnection[T, E](coll: Seq[T], obj: E) = {
+    val idx = coll.indexOf(obj)
 
     if (idx  >= 0) Some(offsetToCursor(idx)) else None
   }
@@ -138,16 +148,15 @@ case class ConnectionDefinition[Ctx, Conn, Val](edgeType: ObjectType[Ctx, Edge[V
 case class DefaultConnection[T](pageInfo: PageInfo, edges: Seq[Edge[T]]) extends Connection[T]
 
 trait Edge[T] {
-  def node: Option[T]
+  def node: T
   def cursor: String
 }
 
 object Edge {
-  def apply[T](node: Option[T], cursor: String) = DefaultEdge(node, cursor)
-  def apply[T](node: T, cursor: String) = DefaultEdge(Some(node), cursor)
+  def apply[T](node: T, cursor: String) = DefaultEdge(node, cursor)
 }
 
-case class DefaultEdge[T](node: Option[T], cursor: String) extends Edge[T]
+case class DefaultEdge[T](node: T, cursor: String) extends Edge[T]
 
 case class PageInfo(
   hasNextPage: Boolean = false,

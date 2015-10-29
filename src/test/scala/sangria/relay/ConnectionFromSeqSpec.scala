@@ -6,7 +6,7 @@ import sangria.relay.util.AwaitSupport
 import scala.concurrent.Future
 
 class ConnectionFromSeqSpec extends WordSpec with Matchers with AwaitSupport {
-  val Letters = List("A", "B", "C", "D", "E") map (Some(_))
+  val Letters = List("A", "B", "C", "D", "E")
   val FutureLetters = Future.successful(Letters)
 
   import Connection.{cursorForObjectInConnection, connectionFromSeq, connectionFromFutureSeq}

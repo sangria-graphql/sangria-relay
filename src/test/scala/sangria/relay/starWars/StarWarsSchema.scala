@@ -128,7 +128,7 @@ object StarWarsSchema {
    *     node: Ship
    *   }
    */
-  val ConnectionDefinition(_, shipConnection) = Connection.definition[ShipRepo, Connection, Ship]("Ship", ShipType)
+  val ConnectionDefinition(_, shipConnection) = Connection.definition[ShipRepo, Connection, Option[Ship]]("Ship", OptionType(ShipType))
 
   /**
    * We define our faction type, which implements the node interface.
