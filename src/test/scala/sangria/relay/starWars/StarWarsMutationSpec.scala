@@ -5,7 +5,7 @@ import sangria.execution.Executor
 import sangria.parser.QueryParser
 import sangria.relay.starWars.StarWarsData.ShipRepo
 import sangria.relay.util.AwaitSupport
-import sangria.integration.InputUnmarshaller.mapVars
+import sangria.marshalling.InputUnmarshaller.mapVars
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Success

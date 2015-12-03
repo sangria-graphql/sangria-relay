@@ -189,10 +189,10 @@ case class ConnectionArgs(before: Option[String] = None, after: Option[String] =
 object ConnectionArgs {
   def apply(args: WithArguments): ConnectionArgs =
     ConnectionArgs(
-      args argOpt Connection.Args.Before,
-      args argOpt Connection.Args.After,
-      args argOpt Connection.Args.First,
-      args argOpt Connection.Args.Last)
+      args arg Connection.Args.Before,
+      args arg Connection.Args.After,
+      args arg Connection.Args.First,
+      args arg Connection.Args.Last)
 
   val empty = ConnectionArgs()
 }

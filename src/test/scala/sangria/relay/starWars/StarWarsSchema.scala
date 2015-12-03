@@ -185,7 +185,7 @@ object StarWarsSchema {
    *     faction: Faction
    *   }
    */
-  val shipMutation = Mutation.fieldWithClientMutationId[ShipRepo, Unit, ShipMutationPayload](
+  val shipMutation = Mutation.fieldWithClientMutationId[ShipRepo, Unit, ShipMutationPayload, InputObjectType.DefaultInput](
     fieldName = "introduceShip",
     typeName = "IntroduceShip",
     inputFields = List(

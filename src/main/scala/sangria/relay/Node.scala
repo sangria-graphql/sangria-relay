@@ -1,5 +1,7 @@
 package sangria.relay
 
+import sangria.marshalling.FromInput
+
 import language.{implicitConversions, existentials}
 
 import sangria.execution.{FieldTag, UserFacingError, ExecutionError}
@@ -70,12 +72,12 @@ object Node {
     description: Option[String] = None,
     tags: List[FieldTag] = Nil,
     complexity: Option[(Ctx, Args, Double) ⇒ Double] = None
-  )(implicit res: ArgumentType[T], ev1: ValidOutType[Res, Out]) =
+  )(implicit res: ArgumentType[T], ev1: ValidOutType[Res, Out], fromInput: FromInput[T]) =
     Field(fieldName, OptionType(ListType(OptionType(fieldType))), description,
       tags = tags,
       complexity = complexity,
       arguments = Argument(argName, ListInputType(argType)) :: Nil,
-      resolve = (ctx: Context[Ctx, Val]) ⇒ ctx.arg[List[T]](argName) map (resolveSingleInput(_, ctx)))
+      resolve = (ctx: Context[Ctx, Val]) ⇒ ctx.arg[Vector[T]](argName) map (resolveSingleInput(_, ctx)))
 
   def pluralIdentifyingRootFieldFut[Ctx, Val, Res, Out, T](
     fieldName: String,
@@ -86,7 +88,7 @@ object Node {
     description: Option[String] = None,
     tags: List[FieldTag] = Nil,
     complexity: Option[(Ctx, Args, Double) ⇒ Double] = None
-  )(implicit res: ArgumentType[T], ev1: ValidOutType[Res, Out], execCtx: ExecutionContext) =
+  )(implicit res: ArgumentType[T], ev1: ValidOutType[Res, Out], execCtx: ExecutionContext, fromInput: FromInput[T]) =
     Field(fieldName, OptionType(ListType(OptionType(fieldType))), description,
       tags = tags,
       complexity = complexity,

@@ -1,6 +1,7 @@
 package sangria.relay
 
 import sangria.execution.FieldTag
+import sangria.marshalling.FromInput
 import sangria.schema._
 
 import scala.annotation.implicitNotFound
@@ -13,15 +14,15 @@ trait Mutation {
 object Mutation {
   val ClientMutationIdFieldName = "clientMutationId"
 
-  def fieldWithClientMutationId[Ctx, Val, Res : MutationLike : ClassTag](
+  def fieldWithClientMutationId[Ctx, Val, Res : MutationLike : ClassTag, Input: FromInput](
         fieldName: String,
         typeName: String,
-        mutateAndGetPayload: (InputObjectType.InputObjectRes, Context[Ctx, Val]) ⇒ Action[Ctx, Res],
+        mutateAndGetPayload: (Input, Context[Ctx, Val]) ⇒ Action[Ctx, Res],
         inputFields: List[InputField[_]] = Nil,
         outputFields: List[Field[Ctx, Res]] = Nil,
         tags: List[FieldTag] = Nil,
         complexity: Option[(Ctx, Args, Double) ⇒ Double] = None) = {
-    val inputType = InputObjectType(typeName + "Input",
+    val inputType = InputObjectType[Input](typeName + "Input",
       fields = inputFields :+ InputField(ClientMutationIdFieldName, StringType))
 
     val outputType = ObjectType(typeName + "Payload",

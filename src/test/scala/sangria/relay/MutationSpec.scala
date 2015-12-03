@@ -2,6 +2,7 @@ package sangria.relay
 
 import org.scalatest.{Matchers, WordSpec}
 import sangria.execution.Executor
+import sangria.marshalling.{CoercedScalaResultMarshaller, ResultMarshaller, FromInput}
 import sangria.parser.QueryParser
 import sangria.relay.util.{ResultHelper, AwaitSupport}
 import sangria.schema._
@@ -18,38 +19,37 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
     implicit object CounterMutation extends MutationLike[Counter] {
       override def clientMutationId(value: Counter) = value.id
     }
+
+    implicit object CounterFromInput extends FromInput[Counter] {
+      val marshaller = CoercedScalaResultMarshaller.default
+      def fromResult(node: marshaller.Node) = {
+        val input = node.asInstanceOf[Map[String, Any]]
+
+        Counter(
+          id = input(Mutation.ClientMutationIdFieldName).asInstanceOf[String],
+          num = input get "num" flatMap (_.asInstanceOf[Option[Int]]) getOrElse 1)
+      }
+    }
   }
 
   class Repo {
     def mutateCounter(c: Counter) = c.copy(num = c.num + 1)
   }
 
-  val simpleMutation = Mutation.fieldWithClientMutationId[Repo, Unit, Counter](
+  val simpleMutation = Mutation.fieldWithClientMutationId[Repo, Unit, Counter, Counter](
     fieldName = "simpleMutation",
     typeName = "SimpleMutation",
     inputFields = List(InputField("num", OptionInputType(IntType))),
     outputFields = fields(Field("num", OptionType(IntType), resolve = _.value.num)),
-    mutateAndGetPayload = (input, ctx) ⇒ {
-      val counter = Counter(
-        id = input(Mutation.ClientMutationIdFieldName).asInstanceOf[String],
-        num = input get "num" map (_.asInstanceOf[Int]) getOrElse 1)
-
-      ctx.ctx.mutateCounter(counter)
-    }
+    mutateAndGetPayload = (counter, ctx) ⇒ ctx.ctx.mutateCounter(counter)
   )
 
-  val simpleFutureMutation = Mutation.fieldWithClientMutationId[Repo, Unit, Counter](
+  val simpleFutureMutation = Mutation.fieldWithClientMutationId[Repo, Unit, Counter, Counter](
     fieldName = "simpleFutureMutation",
     typeName = "SimpleFutureMutation",
     inputFields = List(InputField("num", OptionInputType(IntType))),
     outputFields = fields(Field("num", OptionType(IntType), resolve = _.value.num)),
-    mutateAndGetPayload = (input, ctx) ⇒ {
-      val counter = Counter(
-        id = input(Mutation.ClientMutationIdFieldName).asInstanceOf[String],
-        num = input get "num" map (_.asInstanceOf[Int]) getOrElse 1)
-
-      Future.successful(ctx.ctx.mutateCounter(counter))
-    }
+    mutateAndGetPayload = (counter, ctx) ⇒ Future.successful(ctx.ctx.mutateCounter(counter))
   )
 
   val mutation = ObjectType("Mutation",
