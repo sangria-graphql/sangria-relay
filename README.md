@@ -8,7 +8,7 @@
 
 SBT Configuration:
 
-    libraryDependencies += "org.sangria-graphql" %% "sangria-relay" % "0.4.3"
+    libraryDependencies += "org.sangria-graphql" %% "sangria-relay" % "0.5.0"
 
 More info and the documentation can be found in the project home page:
 
