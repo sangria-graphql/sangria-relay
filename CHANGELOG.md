@@ -1,3 +1,34 @@
+## Upcoming
+
+* The `typeName` argument of `Node.globalIdField` is now optional. If not provided, it would be inferred based on a parent type name.
+  Since it's optional now, the signature of `Node.globalIdField` has changed, so this change is not backwards-compatible:
+  ```
+  // Old version 
+  ObjectType("User", interfaces[Unit, User](nodeInterface),
+    fields[Unit, User](
+      Node.globalIdField("User"),
+      ...
+    )
+  )
+  
+  // new version - if global ID type name is the same as parent type 
+  // (like in example above)
+  ObjectType("User", interfaces[Unit, User](nodeInterface),
+    fields[Unit, User](
+      Node.globalIdField,
+      ...
+    )
+  )
+     
+  // new version - if global ID type name is different from the parent type name
+  ObjectType("User", interfaces[Unit, User](nodeInterface),
+    fields[Unit, User](
+      Node.globalIdField(Some("CustomUser")),
+      ...
+    )
+  )   
+  ```
+  
 ## 0.5.0 (2015-12-03)
 
 * Updated sangria to v0.5.0

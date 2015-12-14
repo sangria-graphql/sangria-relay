@@ -13,10 +13,17 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
   case class User(id: String, name: String) extends Node
   case class Photo(photoId: String, width: Int)
+  case class Post(postId: Int, text: String)
 
   object Photo {
     implicit object PhotoId extends Identifiable[Photo] {
       def id(value: Photo) = value.photoId
+    }
+  }
+
+  object Post {
+    implicit object PhotoId extends Identifiable[Post] {
+      def id(value: Post) = value.postId.toString
     }
   }
 
@@ -30,28 +37,39 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
       Photo("1", 300),
       Photo("2", 400)
     )
+
+    val Posts = List(
+      Post(1, "lorem"),
+      Post(2, "ipsum")
+    )
   }
 
   val NodeDefinition(nodeInterface, nodeField) = Node.definition((id: GlobalId, ctx: Context[Repo, Unit]) ⇒ {
     if (id.typeName == "User") ctx.ctx.Users.find(_.id == id.id)
-    else ctx.ctx.Photos.find(_.photoId == id.id)
-  }, Node.possibleNodeTypes[Repo, Node](UserType, PhotoType))
+    else if (id.typeName == "CustomPhoto") ctx.ctx.Photos.find(_.photoId == id.id)
+    else ctx.ctx.Posts.find(_.postId == id.id.toInt)
+  }, Node.possibleNodeTypes[Repo, Node](UserType, PhotoType, PostType))
 
   val UserType: ObjectType[Unit, User] = ObjectType("User", interfaces[Unit, User](nodeInterface),
     fields[Unit, User](
-      Node.globalIdField("User"),
+      Node.globalIdField,
       Field("name", OptionType(StringType), resolve = _.value.name)))
 
   val PhotoType: ObjectType[Unit, Photo] = ObjectType("Photo", interfaces[Unit, Photo](nodeInterface),
     fields[Unit, Photo](
-      Node.globalIdField("Photo"),
+      Node.globalIdField(Some("CustomPhoto")),
       Field("width", OptionType(IntType), resolve = _.value.width)))
+
+  val PostType: ObjectType[Unit, Post] = ObjectType("Post", interfaces[Unit, Post](nodeInterface),
+    fields[Unit, Post](
+      Node.globalIdField,
+      Field("text", OptionType(StringType), resolve = _.value.text)))
 
   val QueryType: ObjectType[Repo, Unit] = ObjectType("Query",
     fields[Repo, Unit](
       nodeField,
       Field("allObjects", OptionType(ListType(nodeInterface)),
-        resolve = ctx ⇒ ctx.ctx.Users ++ ctx.ctx.Photos)))
+        resolve = ctx ⇒ ctx.ctx.Users ++ ctx.ctx.Photos ++ ctx.ctx.Posts)))
 
   val schema = Schema(QueryType)
 
@@ -68,12 +86,14 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
 
       Executor.execute(schema, doc, userContext = new Repo).await should be  (
         Map(
-          "data" -> Map(
-            "allObjects" -> List(
-              Map("id" -> "VXNlcjox"),
-              Map("id" -> "VXNlcjoy"),
-              Map("id" -> "UGhvdG86MQ=="),
-              Map("id" -> "UGhvdG86Mg==")))))
+          "data" → Map(
+            "allObjects" → List(
+              Map("id" → "VXNlcjox"),
+              Map("id" → "VXNlcjoy"),
+              Map("id" → "Q3VzdG9tUGhvdG86MQ=="),
+              Map("id" → "Q3VzdG9tUGhvdG86Mg=="),
+              Map("id" → "UG9zdDox"),
+              Map("id" → "UG9zdDoy")))))
     }
 
     "Refetches the IDs" in {
@@ -85,11 +105,17 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
               ... on User {
                 name
               }
-            },
-            photo: node(id: "UGhvdG86MQ==") {
+            }
+            photo: node(id: "Q3VzdG9tUGhvdG86MQ==") {
               id
               ... on Photo {
                 width
+              }
+            }
+            post: node(id: "UG9zdDoy") {
+              id
+              ... on Post {
+                text
               }
             }
           }
@@ -97,13 +123,16 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
 
       Executor.execute(schema, doc, userContext = new Repo).await should be  (
         Map(
-          "data" -> Map(
-            "user" -> Map(
-              "id" -> "VXNlcjox",
-              "name" -> "John Doe"),
-            "photo" -> Map(
-              "id" -> "UGhvdG86MQ==",
-              "width" -> 300))))
+          "data" → Map(
+            "user" → Map(
+              "id" → "VXNlcjox",
+              "name" → "John Doe"),
+            "photo" → Map(
+              "id" → "Q3VzdG9tUGhvdG86MQ==",
+              "width" → 300),
+            "post" → Map(
+              "id" → "UG9zdDoy",
+              "text" → "ipsum"))))
     }
   }
 }

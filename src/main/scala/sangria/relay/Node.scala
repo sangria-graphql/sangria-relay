@@ -17,6 +17,9 @@ trait Node {
 object Node {
   implicit def identifiableNodeType[T: Identifiable] = PossibleType.create[Node, T]
 
+  val GlobalIdFieldName = "id"
+  val GlobalIdFieldDescription = "The ID of an object"
+
   object Args {
     val ID = Argument("id", IDType, description = "The ID of an object")
 
@@ -54,14 +57,20 @@ object Node {
       tags,
       complexity)
 
+  def globalIdField[Ctx, Val : Identifiable] =
+    Field(GlobalIdFieldName, IDType, Some(GlobalIdFieldDescription),
+      resolve = (ctx: Context[Ctx, Val]) ⇒ GlobalId.toGlobalId(ctx.parentType.name, implicitly[Identifiable[Val]].id(ctx.value)))
+
   def globalIdField[Ctx, Val : Identifiable](
-      typeName: String,
+      typeName: Option[String] = None,
       tags: List[FieldTag] = Nil,
       complexity: Option[(Ctx, Args, Double) ⇒ Double] = None) =
-    Field("id", IDType, Some("The ID of an object"),
+    Field(GlobalIdFieldName, IDType, Some(GlobalIdFieldDescription),
       tags = tags,
       complexity = complexity,
-      resolve = (ctx: Context[Ctx, Val]) ⇒ GlobalId.toGlobalId(typeName, implicitly[Identifiable[Val]].id(ctx.value)))
+      resolve = (ctx: Context[Ctx, Val]) ⇒ GlobalId.toGlobalId(typeName.getOrElse(ctx.parentType.name), implicitly[Identifiable[Val]].id(ctx.value)))
+
+
 
   def pluralIdentifyingRootField[Ctx, Val, Res, Out, T](
     fieldName: String,

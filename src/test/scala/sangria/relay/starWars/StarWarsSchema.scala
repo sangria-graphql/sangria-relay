@@ -90,8 +90,8 @@ object StarWarsSchema {
     else None
   }, Node.possibleNodeTypes[ShipRepo, Node](ShipType))
 
-  def idFields[T : Identifiable](name: String) = fields[Unit, T](
-    Node.globalIdField(name),
+  def idFields[T : Identifiable] = fields[Unit, T](
+    Node.globalIdField,
     Field("rawId", StringType, resolve = ctx ⇒ implicitly[Identifiable[T]].id(ctx.value))
   )
 
@@ -108,7 +108,7 @@ object StarWarsSchema {
     "Ship",
     "A ship in the Star Wars saga",
     interfaces[Unit, Ship](nodeInterface),
-    idFields[Ship]("Ship") ++
+    idFields[Ship] ++
     fields[Unit, Ship](
       Field("name", OptionType(StringType), Some("The name of the ship."), resolve = _.value.name)))
 
@@ -145,7 +145,7 @@ object StarWarsSchema {
     "A faction in the Star Wars saga",
     interfaces[ShipRepo, Faction](nodeInterface),
     fields[ShipRepo, Faction](
-      Node.globalIdField[ShipRepo, Faction]("Faction"),
+      Node.globalIdField[ShipRepo, Faction],
       Field("name", OptionType(StringType), Some("The name of the faction."), resolve = _.value.name),
       Field("ships", OptionType(shipConnection), arguments = Connection.Args.All,
         resolve = ctx ⇒ Connection.connectionFromSeq(ctx.value.ships map ctx.ctx.getShip, ConnectionArgs(ctx)))))
