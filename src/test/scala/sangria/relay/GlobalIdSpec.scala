@@ -22,12 +22,20 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
   }
 
   object Post {
-    implicit object PhotoId extends Identifiable[Post] {
-      def id(value: Post) = value.postId.toString
+    implicit object PostId extends IdentifiableNode[PostRepo, Post] {
+      def id(ctx: Context[PostRepo, Post]) = ctx.value.postId.toString
     }
   }
 
-  class Repo {
+  trait PhotoRepo {
+    def Photos: List[Photo]
+  }
+
+  trait PostRepo {
+    def Posts: List[Post]
+  }
+
+  class Repo extends PhotoRepo with PostRepo {
     val Users = List(
       User("1", "John Doe"),
       User("2", "Jane Smith")
@@ -55,13 +63,13 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
       Node.globalIdField,
       Field("name", OptionType(StringType), resolve = _.value.name)))
 
-  val PhotoType: ObjectType[Unit, Photo] = ObjectType("Photo", interfaces[Unit, Photo](nodeInterface),
-    fields[Unit, Photo](
+  val PhotoType: ObjectType[Repo, Photo] = ObjectType("Photo", interfaces[Repo, Photo](nodeInterface),
+    fields[Repo, Photo](
       Node.globalIdField(Some("CustomPhoto")),
       Field("width", OptionType(IntType), resolve = _.value.width)))
 
-  val PostType: ObjectType[Unit, Post] = ObjectType("Post", interfaces[Unit, Post](nodeInterface),
-    fields[Unit, Post](
+  val PostType: ObjectType[Repo, Post] = ObjectType("Post", interfaces[Repo, Post](nodeInterface),
+    fields[Repo, Post](
       Node.globalIdField,
       Field("text", OptionType(StringType), resolve = _.value.text)))
 

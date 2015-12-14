@@ -15,7 +15,7 @@ class NodeSpec extends WordSpec with Matchers with AwaitSupport with ResultHelpe
 
   object Photo {
     implicit object PhotoId extends Identifiable[Photo] {
-      def id(value: Photo) = value.photoId
+      def id(photo: Photo) = photo.photoId
     }
   }
 

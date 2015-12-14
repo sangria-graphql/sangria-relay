@@ -2,7 +2,7 @@ package sangria.relay.starWars
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import sangria.relay.{Connection, ConnectionLike, Identifiable, Node}
+import sangria.relay.{Identifiable, Node}
 
 /**
  * This defines a basic set of data for our Star Wars Schema.
@@ -17,7 +17,7 @@ object StarWarsData {
 
   object Faction {
     implicit object FactionIdentifiable extends Identifiable[Faction] {
-      def id(value: Faction) = value.id
+      def id(faction: Faction) = faction.id
     }
   }
 

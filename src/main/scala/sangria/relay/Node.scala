@@ -4,7 +4,7 @@ import sangria.marshalling.FromInput
 
 import language.{implicitConversions, existentials}
 
-import sangria.execution.{FieldTag, UserFacingError, ExecutionError}
+import sangria.execution.{FieldTag, UserFacingError}
 
 import sangria.schema._
 import scala.annotation.implicitNotFound
@@ -15,7 +15,7 @@ trait Node {
 }
 
 object Node {
-  implicit def identifiableNodeType[T: Identifiable] = PossibleType.create[Node, T]
+  implicit def identifiableNodeType[Ctx, T](implicit ev: IdentifiableNode[Ctx, T]) = PossibleType.create[Node, T]
 
   val GlobalIdFieldName = "id"
   val GlobalIdFieldDescription = "The ID of an object"
@@ -33,7 +33,7 @@ object Node {
       complexity: Option[(Ctx, Args, Double) ⇒ Double] = None) = {
     val interfaceType = InterfaceType("Node", "An object with an ID", fields[Ctx, Res](
       Field("id", IDType, Some("The id of the object."), resolve = ctx ⇒
-        possibleTypes.find(_.objectType.isInstanceOf(ctx.value)).map(_.id.asInstanceOf[Identifiable[Res]].id(ctx.value)).getOrElse(throw UnknownPossibleType(ctx.value)))
+        possibleTypes.find(_.objectType.isInstanceOf(ctx.value)).map(_.id.asInstanceOf[IdentifiableNode[Ctx, Res]].id(ctx)).getOrElse(throw UnknownPossibleType(ctx.value)))
     ))
 
     val nodeField = Field("node", OptionType(interfaceType), Some("Fetches an object given its ID"),
@@ -57,20 +57,18 @@ object Node {
       tags,
       complexity)
 
-  def globalIdField[Ctx, Val : Identifiable] =
+  def globalIdField[Ctx, Val](implicit ev: IdentifiableNode[Ctx, Val]) =
     Field(GlobalIdFieldName, IDType, Some(GlobalIdFieldDescription),
-      resolve = (ctx: Context[Ctx, Val]) ⇒ GlobalId.toGlobalId(ctx.parentType.name, implicitly[Identifiable[Val]].id(ctx.value)))
+      resolve = (ctx: Context[Ctx, Val]) ⇒ GlobalId.toGlobalId(ctx.parentType.name, ev.id(ctx)))
 
-  def globalIdField[Ctx, Val : Identifiable](
+  def globalIdField[Ctx, Val](
       typeName: Option[String] = None,
       tags: List[FieldTag] = Nil,
-      complexity: Option[(Ctx, Args, Double) ⇒ Double] = None) =
+      complexity: Option[(Ctx, Args, Double) ⇒ Double] = None)(implicit ev: IdentifiableNode[Ctx, Val]) =
     Field(GlobalIdFieldName, IDType, Some(GlobalIdFieldDescription),
       tags = tags,
       complexity = complexity,
-      resolve = (ctx: Context[Ctx, Val]) ⇒ GlobalId.toGlobalId(typeName.getOrElse(ctx.parentType.name), implicitly[Identifiable[Val]].id(ctx.value)))
-
-
+      resolve = (ctx: Context[Ctx, Val]) ⇒ GlobalId.toGlobalId(typeName.getOrElse(ctx.parentType.name), ev.id(ctx)))
 
   def pluralIdentifyingRootField[Ctx, Val, Res, Out, T](
     fieldName: String,
@@ -114,26 +112,50 @@ case class WrongGlobalId(id: String) extends Exception(s"Invalid Global ID: $id"
 
 case class NodeDefinition[Ctx, Val, Res](interface: InterfaceType[Ctx, Res], field: Field[Ctx, Val])
 
-@implicitNotFound("Type ${T} is not identifiable. Please consider defining implicit instance of sangria.relay.Identifiable for type ${T} or extending sangria.relay.Node trait.")
+@implicitNotFound("Type ${T} is not identifiable. Please consider defining implicit instance of sangria.relay.Identifiable or sangria.relay.IdentifiableNode for type ${T} or extending sangria.relay.Node trait.")
 trait Identifiable[T] {
   def id(value: T): String
 }
 
 object Identifiable {
-  private object IdentifiableNode extends Identifiable[Node] {
-    override def id(node: Node) = node.id
+  private object IdentifiableEv extends Identifiable[Node] {
+    override def id(value: Node) = value.id
   }
 
-  implicit def identifiableNode[T <: Node]: Identifiable[T] =
-    IdentifiableNode.asInstanceOf[Identifiable[T]]
+  implicit def identifiableEv[Ctx, T <: Node]: Identifiable[T] =
+    IdentifiableEv.asInstanceOf[Identifiable[T]]
 }
 
-case class PossibleNodeObject[Ctx, Abstract] private (objectType: ObjectType[Ctx, _], id: Identifiable[_])
+@implicitNotFound("Type ${T} is not identifiable. Please consider defining implicit instance of sangria.relay.Identifiable or sangria.relay.IdentifiableNode for type ${T} or extending sangria.relay.Node trait.")
+trait IdentifiableNode[Ctx, T] {
+  def id(ctx: Context[Ctx, T]): String
+}
+
+object IdentifiableNode extends IdentifiableNodeLowPrio {
+  private object IdentifiableNodeEv extends IdentifiableNode[Any, Node] {
+    override def id(ctx: Context[Any, Node]) = ctx.value.id
+  }
+
+  implicit def identifiableNodeEv[Ctx, T <: Node]: IdentifiableNode[Ctx, T] =
+    IdentifiableNodeEv.asInstanceOf[IdentifiableNode[Ctx, T]]
+
+  implicit def identifiableNodeIdEv[Ctx, T : Identifiable]: IdentifiableNode[Ctx, T] = new IdentifiableNode[Ctx, T] {
+    lazy val identifiable = implicitly[Identifiable[T]]
+    def id(ctx: Context[Ctx, T]) = identifiable.id(ctx.value)
+  }
+}
+
+trait IdentifiableNodeLowPrio {
+  implicit def identifiableNodeCtxEv[Ctx1, Ctx2, T](implicit ev: IdentifiableNode[Ctx1, T], ev1: Ctx2 <:< Ctx1): IdentifiableNode[Ctx2, T] =
+    ev.asInstanceOf[IdentifiableNode[Ctx2, T]]
+}
+
+case class PossibleNodeObject[Ctx, Abstract] private (objectType: ObjectType[Ctx, _], id: IdentifiableNode[_, _])
 
 object PossibleNodeObject {
-  implicit def apply[Ctx, Abstract, Concrete](obj: ObjectType[Ctx, Concrete])(implicit ev: PossibleType[Abstract, Concrete], id: Identifiable[Concrete]): PossibleNodeObject[Ctx, Abstract] =
+  implicit def apply[Ctx, Abstract, Concrete](obj: ObjectType[Ctx, Concrete])(implicit ev: PossibleType[Abstract, Concrete], id: IdentifiableNode[Ctx, Concrete]): PossibleNodeObject[Ctx, Abstract] =
     PossibleNodeObject[Ctx, Abstract](obj, id)
 
-  implicit def applyUnit[Ctx, Abstract, Concrete](obj: ObjectType[Unit, Concrete])(implicit ev: PossibleType[Abstract, Concrete], id: Identifiable[Concrete]): PossibleNodeObject[Ctx, Abstract] =
-    PossibleNodeObject[Ctx, Abstract](obj.asInstanceOf[ObjectType[Ctx, Concrete]], id)
+  implicit def applyUnit[Ctx, Abstract, Concrete](obj: ObjectType[Unit, Concrete])(implicit ev: PossibleType[Abstract, Concrete], id: IdentifiableNode[Ctx, Concrete]): PossibleNodeObject[Ctx, Abstract] =
+    PossibleNodeObject[Ctx, Abstract](obj, id)
 }

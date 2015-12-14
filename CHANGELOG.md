@@ -28,6 +28,8 @@
     )
   )   
   ```
+* Added `IdentifiableNode` type-class which provides more powerful alternative to `Identifiable` type-class. It allows you to extract ID not only based on
+  the `Val`, but also based on the whole `Context[Ctx, Val]`.
   
 ## 0.5.0 (2015-12-03)
 
