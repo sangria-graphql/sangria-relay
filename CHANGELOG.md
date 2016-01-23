@@ -2,7 +2,8 @@
 
 * The `typeName` argument of `Node.globalIdField` is now optional. If not provided, it would be inferred based on a parent type name.
   Since it's optional now, the signature of `Node.globalIdField` has changed, so this change is not backwards-compatible:
-  ```
+  
+  ```scala
   // Old version 
   ObjectType("User", interfaces[Unit, User](nodeInterface),
     fields[Unit, User](
