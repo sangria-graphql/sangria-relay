@@ -1,4 +1,4 @@
-## Upcoming
+## v0.5.1 (2016-01-23)
 
 * The `typeName` argument of `Node.globalIdField` is now optional. If not provided, it would be inferred based on a parent type name.
   Since it's optional now, the signature of `Node.globalIdField` has changed, so this change is not backwards-compatible:
@@ -30,6 +30,7 @@
   ```
 * Added `IdentifiableNode` type-class which provides more powerful alternative to `Identifiable` type-class. It allows you to extract ID not only based on
   the `Val`, but also based on the whole `Context[Ctx, Val]`.
+* Updated sangria to v0.5.1
   
 ## 0.5.0 (2015-12-03)
 
