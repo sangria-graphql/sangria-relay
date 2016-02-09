@@ -21,7 +21,8 @@ object Mutation {
         inputFields: List[InputField[_]] = Nil,
         outputFields: List[Field[Ctx, Res]] = Nil,
         tags: List[FieldTag] = Nil,
-        complexity: Option[(Ctx, Args, Double) ⇒ Double] = None) = {
+        complexity: Option[(Ctx, Args, Double) ⇒ Double] = None,
+        fieldDescription: Option[String] = None) = {
     val inputType = InputObjectType[Input](typeName + "Input",
       fields = inputFields :+ InputField(ClientMutationIdFieldName, StringType))
 
@@ -31,6 +32,7 @@ object Mutation {
     val inputArg = Argument("input", inputType)
 
     Field(fieldName, OptionType(outputType),
+      description = fieldDescription,
       tags = tags,
       complexity = complexity,
       arguments = inputArg :: Nil,

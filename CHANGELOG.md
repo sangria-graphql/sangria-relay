@@ -1,3 +1,7 @@
+## Upcoming
+
+* `fieldWithClientMutationId` now allows to provide a field's description.
+
 ## v0.5.1 (2016-01-23)
 
 * The `typeName` argument of `Node.globalIdField` is now optional. If not provided, it would be inferred based on a parent type name.
