@@ -1,6 +1,6 @@
 name := "sangria-relay"
 organization := "org.sangria-graphql"
-version := "0.5.2-SNAPSHOT"
+version := "0.5.2"
 
 description := "Sangria Relay Support"
 homepage := Some(url("http://sangria-graphql.org"))
@@ -10,8 +10,8 @@ scalaVersion := "2.11.7"
 scalacOptions ++= Seq("-deprecation", "-feature")
 
 libraryDependencies ++= Seq(
-  "org.sangria-graphql" %% "sangria" % "0.5.1",
-  "org.scalatest" %% "scalatest" % "2.2.4" % "test"
+  "org.sangria-graphql" %% "sangria" % "0.5.2",
+  "org.scalatest" %% "scalatest" % "2.2.6" % "test"
 )
 
 git.remoteRepo := "git@github.com:sangria-graphql/sangria-relay.git"
