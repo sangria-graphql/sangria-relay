@@ -14,9 +14,9 @@ More info and the documentation can be found in the project home page:
 
 [http://sangria-graphql.org](http://sangria-graphql.org/)
 
-For some examples you can look at the StarWars tests, which nicely demonstrate most of the features of the library (more detailed documentation is coming soon):
-
-[https://github.com/sangria-graphql/sangria-relay/tree/master/src/test/scala/sangria/relay/starWars](https://github.com/sangria-graphql/sangria-relay/tree/master/src/test/scala/sangria/relay/starWars)
+I would also would recommend you to check out [http://try-relay.sangria-graphql.org](http://try-relay.sangria-graphql.org).
+It is an example of a GraphQL server written with the Play framework and sangria-relay. It also serves as a playground,
+where you can interactively execute GraphQL queries and play with some examples.
 
 ## Mailing List
 
