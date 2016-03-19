@@ -1,7 +1,7 @@
 package sangria.relay
 
 import org.scalatest.{Matchers, WordSpec}
-import sangria.execution.Executor
+import sangria.execution.{ErrorWithResolver, Executor}
 import sangria.marshalling.{CoercedScalaResultMarshaller, ResultMarshaller, FromInput}
 import sangria.parser.QueryParser
 import sangria.relay.util.{ResultHelper, AwaitSupport}
@@ -69,7 +69,9 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
             }
           """)
 
-        val result = Executor.execute(schema, doc, userContext = new Repo).await
+        val result = Executor.execute(schema, doc, userContext = new Repo).recover {
+          case e: ErrorWithResolver ⇒ e.resolveError
+        }.await
 
         result.getProp("data").asAnyRef should equal (null)
 

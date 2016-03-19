@@ -1,3 +1,7 @@
+## v0.6.0 (2016-03-19)
+
+* Updated sangria to v0.6.0
+
 ## v0.5.2 (2016-02-28)
 
 * `fieldWithClientMutationId` now allows to provide a field's description.

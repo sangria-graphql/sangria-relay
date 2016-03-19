@@ -1,16 +1,16 @@
 name := "sangria-relay"
 organization := "org.sangria-graphql"
-version := "0.5.3-SNAPSHOT"
+version := "0.6.0"
 
 description := "Sangria Relay Support"
 homepage := Some(url("http://sangria-graphql.org"))
 licenses := Seq("Apache License, ASL Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 scalacOptions ++= Seq("-deprecation", "-feature")
 
 libraryDependencies ++= Seq(
-  "org.sangria-graphql" %% "sangria" % "0.5.2",
+  "org.sangria-graphql" %% "sangria" % "0.6.0",
   "org.scalatest" %% "scalatest" % "2.2.6" % "test"
 )
 
