@@ -1,3 +1,7 @@
+## v0.6.1 (2016-04-02)
+
+* Updated sangria to v0.6.1
+
 ## v0.6.0 (2016-03-19)
 
 * Updated sangria to v0.6.0
