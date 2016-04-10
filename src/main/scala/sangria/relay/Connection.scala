@@ -54,7 +54,7 @@ object Connection {
       () ⇒ {
         List[Field[Ctx, Conn[Val]]](
           Field("pageInfo", PageInfoType, Some("Information to aid in pagination."), resolve = ctx ⇒ connEv.pageInfo(ctx.value)),
-          Field("edges", OptionType(ListType(OptionType(edgeType))), Some("Information to aid in pagination."),
+          Field("edges", OptionType(ListType(OptionType(edgeType))), Some("A list of edges."),
             resolve = ctx ⇒ connEv.edges(ctx.value) map (Some(_)))
         ) ++ connectionFields
       })
