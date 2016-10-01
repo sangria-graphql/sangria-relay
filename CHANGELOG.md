@@ -1,6 +1,8 @@
 ## v0.7.4 (Upcoming)
 
+* Remove non-null restriction on clientMutationId field definitions (#16)
 * First and last arguments must be positive integers (#15)
+* `Identifier` type class now transparently supports `HasId` type-class
 * Updated sangria to v0.7.4
 
 ## v0.7.3 (2016-08-26)

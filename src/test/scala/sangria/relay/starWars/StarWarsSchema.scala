@@ -61,13 +61,13 @@ import sangria.schema._
  * }
  *
  * input IntroduceShipInput {
- *   clientMutationId: string!
+ *   clientMutationId: string
  *   shipName: string!
  *   factionId: ID!
  * }
  *
  * input IntroduceShipPayload {
- *   clientMutationId: string!
+ *   clientMutationId: string
  *   ship: Ship
  *   faction: Faction
  * }
@@ -166,7 +166,7 @@ object StarWarsSchema {
     Field("empire", OptionType(FactionType), resolve = _.ctx.getEmpire),
     nodeField))
 
-  case class ShipMutationPayload(clientMutationId: String, shipId: String , factionId: String) extends Mutation
+  case class ShipMutationPayload(clientMutationId: Option[String], shipId: String , factionId: String) extends Mutation
 
   /**
    * This will return a `Field` for our ship
@@ -174,13 +174,13 @@ object StarWarsSchema {
    *
    * It creates these two types implicitly:
    *   input IntroduceShipInput {
-   *     clientMutationId: string!
+   *     clientMutationId: string
    *     shipName: string!
    *     factionId: ID!
    *   }
    *
    *   input IntroduceShipPayload {
-   *     clientMutationId: string!
+   *     clientMutationId: string
    *     ship: Ship
    *     faction: Faction
    *   }
@@ -195,7 +195,7 @@ object StarWarsSchema {
       Field("ship", OptionType(ShipType), resolve = ctx ⇒ ctx.ctx.getShip(ctx.value.shipId)),
       Field("faction", OptionType(FactionType), resolve = ctx ⇒ ctx.ctx.getFaction(ctx.value.factionId))),
     mutateAndGetPayload = (input, ctx) ⇒ {
-      val mutationId = input(Mutation.ClientMutationIdFieldName).asInstanceOf[String]
+      val mutationId = input(Mutation.ClientMutationIdFieldName).asInstanceOf[Option[String]]
       val shipName = input("shipName").asInstanceOf[String]
       val factionId = input("factionId").asInstanceOf[String]
 

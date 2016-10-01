@@ -17,7 +17,7 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
 
   object Counter {
     implicit object CounterMutation extends MutationLike[Counter] {
-      override def clientMutationId(value: Counter) = value.id
+      override def clientMutationId(value: Counter) = Some(value.id)
     }
 
     implicit object CounterFromInput extends FromInput[Counter] {
@@ -26,7 +26,7 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
         val input = node.asInstanceOf[Map[String, Any]]
 
         Counter(
-          id = input(Mutation.ClientMutationIdFieldName).asInstanceOf[String],
+          id = input(Mutation.ClientMutationIdFieldName).asInstanceOf[Option[String]].get,
           num = input get "num" flatMap (_.asInstanceOf[Option[Int]]) getOrElse 1)
       }
     }
@@ -181,12 +181,9 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
                   Map(
                     "name" -> "clientMutationId",
                     "type" -> Map(
-                      "name" -> null,
-                      "kind" -> "NON_NULL",
-                      "ofType" -> Map(
-                        "name" -> "String",
-                        "kind" -> "SCALAR"
-                      )
+                      "name" -> "String",
+                      "kind" -> "SCALAR",
+                      "ofType" -> null
                     )
                   )
                 )
@@ -233,12 +230,9 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
                   Map(
                     "name" -> "clientMutationId",
                     "type" -> Map(
-                      "name" -> null,
-                      "kind" -> "NON_NULL",
-                      "ofType" -> Map(
-                        "name" -> "String",
-                        "kind" -> "SCALAR"
-                      )
+                      "name" -> "String",
+                      "kind" -> "SCALAR",
+                      "ofType" -> null
                     )
                   )
                 )

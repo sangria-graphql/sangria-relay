@@ -8,7 +8,7 @@ import scala.annotation.implicitNotFound
 import scala.reflect.ClassTag
 
 trait Mutation {
-  def clientMutationId: String
+  def clientMutationId: Option[String]
 }
 
 object Mutation {
@@ -24,10 +24,12 @@ object Mutation {
         complexity: Option[(Ctx, Args, Double) ⇒ Double] = None,
         fieldDescription: Option[String] = None) = {
     val inputType = InputObjectType[Input](typeName + "Input",
-      fields = inputFields :+ InputField(ClientMutationIdFieldName, StringType))
+      fields = inputFields :+ InputField(ClientMutationIdFieldName, OptionInputType(StringType)))
 
     val outputType = ObjectType(typeName + "Payload",
-      outputFields :+ Field(ClientMutationIdFieldName, StringType, resolve = (ctx: Context[Ctx, Res]) ⇒ implicitly[MutationLike[Res]].clientMutationId(ctx.value)))
+      outputFields :+
+        Field(ClientMutationIdFieldName, OptionType(StringType),
+          resolve = (ctx: Context[Ctx, Res]) ⇒ implicitly[MutationLike[Res]].clientMutationId(ctx.value)))
 
     val inputArg = Argument("input", inputType)
 
@@ -42,7 +44,7 @@ object Mutation {
 
 @implicitNotFound("Type ${T} can't be used as a Mutation. Please consider defining implicit instance of sangria.relay.MutationLike for type ${T} or extending sangria.relay.Mutation trait.")
 trait MutationLike[T] {
-  def clientMutationId(value: T): String
+  def clientMutationId(value: T): Option[String]
 }
 
 object MutationLike {
