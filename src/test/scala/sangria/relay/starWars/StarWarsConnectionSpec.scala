@@ -32,14 +32,14 @@ class StarWarsConnectionSpec extends WordSpec with Matchers with AwaitSupport {
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
           Map(
-            "data" -> Map(
-              "rebels" -> Map(
-                "name" -> "Alliance to Restore the Republic",
-                "ships" -> Map(
-                  "edges" -> List(
+            "data" → Map(
+              "rebels" → Map(
+                "name" → "Alliance to Restore the Republic",
+                "ships" → Map(
+                  "edges" → List(
                     Map(
-                      "node" -> Map(
-                        "name" -> "X-Wing"
+                      "node" → Map(
+                        "name" → "X-Wing"
                       )
                     )
                   )
@@ -67,21 +67,21 @@ class StarWarsConnectionSpec extends WordSpec with Matchers with AwaitSupport {
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
           Map(
-            "data" -> Map(
-              "rebels" -> Map(
-                "name" -> "Alliance to Restore the Republic",
-                "ships" -> Map(
-                  "edges" -> List(
+            "data" → Map(
+              "rebels" → Map(
+                "name" → "Alliance to Restore the Republic",
+                "ships" → Map(
+                  "edges" → List(
                     Map(
-                      "cursor" -> "YXJyYXljb25uZWN0aW9uOjA=",
-                      "node" -> Map(
-                        "name" -> "X-Wing"
+                      "cursor" → "YXJyYXljb25uZWN0aW9uOjA=",
+                      "node" → Map(
+                        "name" → "X-Wing"
                       )
                     ),
                     Map(
-                      "cursor" -> "YXJyYXljb25uZWN0aW9uOjE=",
-                      "node" -> Map(
-                        "name" -> "Y-Wing"
+                      "cursor" → "YXJyYXljb25uZWN0aW9uOjE=",
+                      "node" → Map(
+                        "name" → "Y-Wing"
                       )
                     )
                   )
@@ -109,27 +109,27 @@ class StarWarsConnectionSpec extends WordSpec with Matchers with AwaitSupport {
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
           Map(
-            "data" -> Map(
-              "rebels" -> Map(
-                "name" -> "Alliance to Restore the Republic",
-                "ships" -> Map(
-                  "edges" -> List(
+            "data" → Map(
+              "rebels" → Map(
+                "name" → "Alliance to Restore the Republic",
+                "ships" → Map(
+                  "edges" → List(
                     Map(
-                      "cursor" -> "YXJyYXljb25uZWN0aW9uOjI=",
-                      "node" -> Map(
-                        "name" -> "A-Wing"
+                      "cursor" → "YXJyYXljb25uZWN0aW9uOjI=",
+                      "node" → Map(
+                        "name" → "A-Wing"
                       )
                     ),
                     Map(
-                      "cursor" -> "YXJyYXljb25uZWN0aW9uOjM=",
-                      "node" -> Map(
-                        "name" -> "Millenium Falcon"
+                      "cursor" → "YXJyYXljb25uZWN0aW9uOjM=",
+                      "node" → Map(
+                        "name" → "Millenium Falcon"
                       )
                     ),
                     Map(
-                      "cursor" -> "YXJyYXljb25uZWN0aW9uOjQ=",
-                      "node" -> Map(
-                        "name" -> "Home One"
+                      "cursor" → "YXJyYXljb25uZWN0aW9uOjQ=",
+                      "node" → Map(
+                        "name" → "Home One"
                       )
                     )
                   )
@@ -157,11 +157,11 @@ class StarWarsConnectionSpec extends WordSpec with Matchers with AwaitSupport {
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
           Map(
-            "data" -> Map(
-              "rebels" -> Map(
-                "name" -> "Alliance to Restore the Republic",
-                "ships" -> Map(
-                  "edges" -> Nil)))))
+            "data" → Map(
+              "rebels" → Map(
+                "name" → "Alliance to Restore the Republic",
+                "ships" → Map(
+                  "edges" → Nil)))))
       }
 
       "Correctly identifies the end of the list" in {
@@ -196,46 +196,46 @@ class StarWarsConnectionSpec extends WordSpec with Matchers with AwaitSupport {
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
           Map(
-            "data" -> Map(
-              "rebels" -> Map(
-                "name" -> "Alliance to Restore the Republic",
-                "originalShips" -> Map(
-                  "edges" -> List(
+            "data" → Map(
+              "rebels" → Map(
+                "name" → "Alliance to Restore the Republic",
+                "originalShips" → Map(
+                  "edges" → List(
                     Map(
-                      "node" -> Map(
-                        "name" -> "X-Wing"
+                      "node" → Map(
+                        "name" → "X-Wing"
                       )
                     ),
                     Map(
-                      "node" -> Map(
-                        "name" -> "Y-Wing"
+                      "node" → Map(
+                        "name" → "Y-Wing"
                       )
                     )
                   ),
-                  "pageInfo" -> Map(
-                    "hasNextPage" -> true
+                  "pageInfo" → Map(
+                    "hasNextPage" → true
                   )
                 ),
-                "moreShips" -> Map(
-                  "edges" -> List(
+                "moreShips" → Map(
+                  "edges" → List(
                     Map(
-                      "node" -> Map(
-                        "name" -> "A-Wing"
+                      "node" → Map(
+                        "name" → "A-Wing"
                       )
                     ),
                     Map(
-                      "node" -> Map(
-                        "name" -> "Millenium Falcon"
+                      "node" → Map(
+                        "name" → "Millenium Falcon"
                       )
                     ),
                     Map(
-                      "node" -> Map(
-                        "name" -> "Home One"
+                      "node" → Map(
+                        "name" → "Home One"
                       )
                     )
                   ),
-                  "pageInfo" -> Map(
-                    "hasNextPage" -> false
+                  "pageInfo" → Map(
+                    "hasNextPage" → false
                   )
                 )
               ))))

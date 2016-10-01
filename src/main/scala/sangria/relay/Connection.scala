@@ -111,7 +111,7 @@ object Connection {
     val slice = seqSlice.slice(math.max(actualStartOffset - sliceStart, 0), seqSlice.size - (sliceEnd - actualEndOffset))
 
     val edges = slice.zipWithIndex.map {
-      case (value, index) => Edge(value, offsetToCursor(actualStartOffset + index))
+      case (value, index) ⇒ Edge(value, offsetToCursor(actualStartOffset + index))
     }
 
     val firstEdge = edges.headOption

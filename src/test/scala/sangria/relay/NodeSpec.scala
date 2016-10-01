@@ -65,8 +65,8 @@ class NodeSpec extends WordSpec with Matchers with AwaitSupport with ResultHelpe
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" -> Map(
-              "node" -> Map("id" -> "1"))))
+            "data" → Map(
+              "node" → Map("id" → "1"))))
       }
 
       "Gets the correct ID for photos" in {
@@ -82,8 +82,8 @@ class NodeSpec extends WordSpec with Matchers with AwaitSupport with ResultHelpe
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" -> Map(
-              "node" -> Map("id" -> "4"))))
+            "data" → Map(
+              "node" → Map("id" → "4"))))
       }
 
       "Gets the correct width for photos" in {
@@ -102,10 +102,10 @@ class NodeSpec extends WordSpec with Matchers with AwaitSupport with ResultHelpe
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" -> Map(
-              "node" -> Map(
-                "id" -> "4",
-                "width" -> 400))))
+            "data" → Map(
+              "node" → Map(
+                "id" → "4",
+                "width" → 400))))
       }
 
       "Gets the correct type name for users" in {
@@ -122,10 +122,10 @@ class NodeSpec extends WordSpec with Matchers with AwaitSupport with ResultHelpe
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" -> Map(
-              "node" -> Map(
-                "id" -> "1",
-                "__typename" -> "User"))))
+            "data" → Map(
+              "node" → Map(
+                "id" → "1",
+                "__typename" → "User"))))
       }
 
       "Gets the correct type name for photos" in {
@@ -142,10 +142,10 @@ class NodeSpec extends WordSpec with Matchers with AwaitSupport with ResultHelpe
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" -> Map(
-              "node" -> Map(
-                "id" -> "4",
-                "__typename" -> "Photo"))))
+            "data" → Map(
+              "node" → Map(
+                "id" → "4",
+                "__typename" → "Photo"))))
       }
 
       "Ignores photo fragments on user" in {
@@ -164,9 +164,9 @@ class NodeSpec extends WordSpec with Matchers with AwaitSupport with ResultHelpe
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" -> Map(
-              "node" -> Map(
-                "id" -> "1"))))
+            "data" → Map(
+              "node" → Map(
+                "id" → "1"))))
       }
 
       "Returns null for bad IDs" in {
@@ -182,8 +182,8 @@ class NodeSpec extends WordSpec with Matchers with AwaitSupport with ResultHelpe
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" -> Map(
-              "node" -> null)))
+            "data" → Map(
+              "node" → null)))
       }
     }
 
@@ -229,18 +229,18 @@ class NodeSpec extends WordSpec with Matchers with AwaitSupport with ResultHelpe
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" -> Map(
-              "__type" -> Map(
-                "name" -> "Node",
-                "kind" -> "INTERFACE",
-                "fields" -> List(
+            "data" → Map(
+              "__type" → Map(
+                "name" → "Node",
+                "kind" → "INTERFACE",
+                "fields" → List(
                   Map(
-                    "name" -> "id",
-                    "type" -> Map(
-                      "kind" -> "NON_NULL",
-                      "ofType" -> Map(
-                        "name" -> "ID",
-                        "kind" -> "SCALAR"
+                    "name" → "id",
+                    "type" → Map(
+                      "kind" → "NON_NULL",
+                      "ofType" → Map(
+                        "name" → "ID",
+                        "kind" → "SCALAR"
                       )
                     )
                   )
@@ -279,24 +279,24 @@ class NodeSpec extends WordSpec with Matchers with AwaitSupport with ResultHelpe
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" -> Map(
-              "__schema" -> Map(
-                "queryType" -> Map(
-                  "fields" -> List(
+            "data" → Map(
+              "__schema" → Map(
+                "queryType" → Map(
+                  "fields" → List(
                     Map(
-                      "name" -> "node",
-                      "type" -> Map(
-                        "name" -> "Node",
-                        "kind" -> "INTERFACE"
+                      "name" → "node",
+                      "type" → Map(
+                        "name" → "Node",
+                        "kind" → "INTERFACE"
                       ),
-                      "args" -> List(
+                      "args" → List(
                         Map(
-                          "name" -> "id",
-                          "type" -> Map(
-                            "kind" -> "NON_NULL",
-                            "ofType" -> Map(
-                              "name" -> "ID",
-                              "kind" -> "SCALAR"
+                          "name" → "id",
+                          "type" → Map(
+                            "kind" → "NON_NULL",
+                            "ofType" → Map(
+                              "name" → "ID",
+                              "kind" → "SCALAR"
                             )
                           )
                         )

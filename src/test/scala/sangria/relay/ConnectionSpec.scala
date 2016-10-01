@@ -109,27 +109,27 @@ class ConnectionSpec extends WordSpec with Matchers with AwaitSupport {
 
       Executor.execute(schema, doc, userContext = new Repo).await should be(
         Map(
-          "data" -> Map(
-            "scalars" -> Map("edges" -> List(Map("node" -> "bar"))),
-            "user" -> Map(
-              "friends" -> Map(
-                "totalCount" -> 5,
-                "edges" -> List(
+          "data" → Map(
+            "scalars" → Map("edges" → List(Map("node" → "bar"))),
+            "user" → Map(
+              "friends" → Map(
+                "totalCount" → 5,
+                "edges" → List(
                   Map(
-                    "friendshipTime" -> "Yesterday",
-                    "node" -> Map(
-                      "name" -> "Dan",
-                      "pets" -> Map("edges" -> List())
+                    "friendshipTime" → "Yesterday",
+                    "node" → Map(
+                      "name" → "Dan",
+                      "pets" → Map("edges" → List())
                     )
                   ),
                   Map(
-                    "friendshipTime" -> "Yesterday",
-                    "node" -> Map(
-                      "name" -> "Nick",
-                      "pets" ->  Map(
-                        "edges" -> List(
-                          Map("node" -> Map("name" -> "felix")),
-                          Map("node" -> Map("name" -> "bob", "tails" -> 2))
+                    "friendshipTime" → "Yesterday",
+                    "node" → Map(
+                      "name" → "Nick",
+                      "pets" →  Map(
+                        "edges" → List(
+                          Map("node" → Map("name" → "felix")),
+                          Map("node" → Map("name" → "bob", "tails" → 2))
                         )
                       )
                     )
