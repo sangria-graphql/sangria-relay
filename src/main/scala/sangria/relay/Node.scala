@@ -1,12 +1,12 @@
 package sangria.relay
 
+import sangria.execution.deferred.HasId
 import sangria.marshalling.FromInput
 
-import language.{implicitConversions, existentials}
-
+import language.{existentials, implicitConversions}
 import sangria.execution.{FieldTag, UserFacingError}
-
 import sangria.schema._
+
 import scala.annotation.implicitNotFound
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -124,6 +124,11 @@ object Identifiable {
 
   implicit def identifiableEv[Ctx, T <: Node]: Identifiable[T] =
     IdentifiableEv.asInstanceOf[Identifiable[T]]
+
+  implicit def identifiableEv[Ctx, T](implicit ev: HasId[T, String]): Identifiable[T] =
+    new Identifiable[T] {
+      def id(value: T) = ev.id(value)
+    }
 }
 
 @implicitNotFound("Type ${T} is not identifiable. Please consider defining implicit instance of sangria.relay.Identifiable or sangria.relay.IdentifiableNode for type ${T} or extending sangria.relay.Node trait.")

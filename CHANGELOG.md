@@ -1,3 +1,8 @@
+## v0.7.4 (Upcoming)
+
+* First and last arguments must be positive integers (#15)
+* Updated sangria to v0.7.4
+
 ## v0.7.3 (2016-08-26)
 
 * Updated sangria to v0.7.3

@@ -10,7 +10,7 @@ scalaVersion := "2.11.8"
 scalacOptions ++= Seq("-deprecation", "-feature")
 
 libraryDependencies ++= Seq(
-  "org.sangria-graphql" %% "sangria" % "0.7.3",
+  "org.sangria-graphql" %% "sangria" % "0.7.4-SNAPSHOT",
   "org.scalatest" %% "scalatest" % "2.2.6" % "test"
 )
 
@@ -26,6 +26,8 @@ publishTo := Some(
     "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
   else
     "releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
+
+resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 // Site and docs
 

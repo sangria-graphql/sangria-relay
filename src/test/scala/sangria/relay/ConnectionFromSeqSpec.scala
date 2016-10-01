@@ -247,6 +247,16 @@ class ConnectionFromSeqSpec extends WordSpec with Matchers with AwaitSupport {
           Connection.empty[Option[String]].copy(pageInfo = PageInfo.empty.copy(hasNextPage = true)))
       }
 
+      "throws an error if first < 0" in {
+        an [ConnectionArgumentValidationError] should be thrownBy
+            connectionFromSeq(Letters, ConnectionArgs(first = Some(-1)))
+      }
+
+      "throws an error if last < 0" in {
+        an [ConnectionArgumentValidationError] should be thrownBy
+            connectionFromSeq(Letters, ConnectionArgs(last = Some(-1)))
+      }
+
       "Returns all elements if cursors are invalid" in {
         connectionFromSeq(Letters, ConnectionArgs(after = Some("invalid"), before = Some("invalid"))) should be (
           DefaultConnection(

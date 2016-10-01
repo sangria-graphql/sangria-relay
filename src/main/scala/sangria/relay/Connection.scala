@@ -1,14 +1,14 @@
 package sangria.relay
 
-import language.higherKinds
+import sangria.execution.{ExecutionError, UserFacingError}
 
+import language.higherKinds
 import sangria.relay.util.Base64
 import sangria.schema._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 import scala.util.Try
-
 import scala.annotation.implicitNotFound
 
 trait Connection[T] {
@@ -93,6 +93,9 @@ object Connection {
   def connectionFromSeq[T](seqSlice: Seq[T], args: ConnectionArgs, sliceInfo: SliceInfo): Connection[T] = {
     import args._
     import sliceInfo._
+
+    first.foreach(f ⇒ if (f < 0) throw new ConnectionArgumentValidationError("Argument 'first' must be a non-negative integer"))
+    last.foreach(l ⇒ if (l < 0) throw new ConnectionArgumentValidationError("Argument 'last' must be a non-negative integer"))
 
     val sliceEnd = sliceStart + seqSlice.size
     val beforeOffset = getOffset(before, size)
@@ -196,3 +199,5 @@ object ConnectionArgs {
 
   val empty = ConnectionArgs()
 }
+
+case class ConnectionArgumentValidationError(message: String) extends Exception with UserFacingError
