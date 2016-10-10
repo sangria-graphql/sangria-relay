@@ -1,4 +1,8 @@
-## v0.7.4 (2016-10-08)
+## v1.0.0-RC2 (2016-10-10)
+
+* Updated sangria to v1.0.0-RC2
+
+## v1.0.0-RC1 (2016-10-08)
 
 * Remove non-null restriction on clientMutationId field definitions (#16)
 * First and last arguments must be positive integers (#15)
