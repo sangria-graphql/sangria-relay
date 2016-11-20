@@ -1,6 +1,6 @@
 name := "sangria-relay"
 organization := "org.sangria-graphql"
-version := "1.0.0-RC4-SNAPSHOT"
+version := "1.0.0-RC4"
 
 description := "Sangria Relay Support"
 homepage := Some(url("http://sangria-graphql.org"))
@@ -19,10 +19,8 @@ scalacOptions ++= {
 }
 
 libraryDependencies ++= Seq(
-  "org.sangria-graphql" %% "sangria" % "1.0.0-RC3",
+  "org.sangria-graphql" %% "sangria" % "1.0.0-RC4",
   "org.scalatest" %% "scalatest" % "3.0.0" % "test")
-
-git.remoteRepo := "git@github.com:sangria-graphql/sangria-relay.git"
 
 // Publishing
 
@@ -37,20 +35,6 @@ publishTo := Some(
 
 resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-// Site and docs
-
-site.settings
-site.includeScaladoc()
-ghpages.settings
-
-// nice *magenta* prompt!
-
-shellPrompt in ThisBuild := { state ⇒
-  scala.Console.MAGENTA + Project.extract(state).currentRef.project + "> " + scala.Console.RESET
-}
-
-// Additional meta-info
-
 startYear := Some(2015)
 organizationHomepage := Some(url("https://github.com/sangria-graphql"))
 developers := Developer("OlegIlyenko", "Oleg Ilyenko", "", url("https://github.com/OlegIlyenko")) :: Nil
@@ -58,3 +42,9 @@ scmInfo := Some(ScmInfo(
   browseUrl = url("https://github.com/sangria-graphql/sangria-relay.git"),
   connection = "scm:git:git@github.com:sangria-graphql/sangria-relay.git"
 ))
+
+// nice *magenta* prompt!
+
+shellPrompt in ThisBuild := { state ⇒
+  scala.Console.MAGENTA + Project.extract(state).currentRef.project + "> " + scala.Console.RESET
+}

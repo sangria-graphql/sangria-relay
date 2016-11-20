@@ -1,3 +1,7 @@
+## v1.0.0-RC4 (2016-11-20)
+
+* Updated sangria to v1.0.0-RC4
+
 ## v1.0.0-RC3 (2016-11-05)
 
 * Cross compile to scala 2.12 and scala 2.11
