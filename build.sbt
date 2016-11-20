@@ -1,6 +1,6 @@
 name := "sangria-relay"
 organization := "org.sangria-graphql"
-version := "1.0.0-RC4"
+version := "1.0.0-RC5-SNAPSHOT"
 
 description := "Sangria Relay Support"
 homepage := Some(url("http://sangria-graphql.org"))
