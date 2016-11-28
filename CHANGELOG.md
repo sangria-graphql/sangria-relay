@@ -1,3 +1,7 @@
+## v1.0.0-RC5 (2016-11-28)
+
+* Updated sangria to v1.0.0-RC5
+
 ## v1.0.0-RC4 (2016-11-20)
 
 * Updated sangria to v1.0.0-RC4
