@@ -1,3 +1,8 @@
+## Upcoming
+
+* Updated sangria to v1.0.0
+* Added `nodes` field to `NodeDefinition` (#18). It's a minor breaking change. Please note that because of this change the `resolve` function of `Node.definition` now should return `LeafAction` instead of `Action`. This slightly limits it's capabilities, but it was a necessary change to implement `nodes` field. 
+
 ## v1.0.0-RC5 (2016-11-28)
 
 * Updated sangria to v1.0.0-RC5

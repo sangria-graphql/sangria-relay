@@ -84,7 +84,7 @@ object StarWarsSchema {
    * The first method is the way we resolve an ID to its object. The second is the
    * way we resolve an object that implements node to its type.
    */
-  val NodeDefinition(nodeInterface, nodeField) = Node.definition((id: GlobalId, ctx: Context[ShipRepo, Unit]) ⇒ {
+  val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[ShipRepo, Unit]) ⇒ {
     if (id.typeName == "Faction") ctx.ctx.getFaction(id.id)
     else if (id.typeName == "Ship") ctx.ctx.getShip(id.id)
     else None
@@ -164,7 +164,8 @@ object StarWarsSchema {
   val QueryType = ObjectType("Query", fields[ShipRepo, Unit](
     Field("rebels", OptionType(FactionType), resolve = _.ctx.getRebels),
     Field("empire", OptionType(FactionType), resolve = _.ctx.getEmpire),
-    nodeField))
+    nodeField,
+    nodesField))
 
   case class ShipMutationPayload(clientMutationId: Option[String], shipId: String , factionId: String) extends Mutation
 

@@ -4,10 +4,9 @@ import org.scalatest.{Matchers, WordSpec}
 import sangria.execution.Executor
 import sangria.parser.QueryParser
 import sangria.relay.starWars.StarWarsData.ShipRepo
-import sangria.relay.util.AwaitSupport
+import sangria.relay.util.{AwaitSupport, DebugUtil}
 
 import scala.util.Success
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class StarWarsConnectionSpec extends WordSpec with Matchers with AwaitSupport {
@@ -239,6 +238,37 @@ class StarWarsConnectionSpec extends WordSpec with Matchers with AwaitSupport {
                   )
                 )
               ))))
+      }
+
+      "list all ships with `nodes` fields" in {
+        val Success(doc) = QueryParser.parse(
+          """
+            query {
+              nodes(ids: ["U2hpcDox", "U2hpcDoz", "U2hpcDoxMDA=", "RmFjdGlvbjox", "U2hpcDox"]) {
+                id
+
+                ... on Ship {
+                  name
+                }
+              }
+            }
+          """)
+
+        Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be (
+          Map(
+            "data" → Map(
+              "nodes" → Vector(
+                Map(
+                  "id" → "U2hpcDox",
+                  "name" → "X-Wing"),
+                Map(
+                  "id" → "U2hpcDoz",
+                  "name" → "A-Wing"),
+                null,
+                Map("id" → "RmFjdGlvbjox"),
+                Map(
+                  "id" → "U2hpcDox",
+                  "name" → "X-Wing")))))
       }
     }
   }

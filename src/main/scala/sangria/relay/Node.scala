@@ -21,13 +21,12 @@ object Node {
   val GlobalIdFieldDescription = "The ID of an object"
 
   object Args {
-    val ID = Argument("id", IDType, description = "The ID of an object")
-
-    val All = ID :: Nil
+    val Id = Argument("id", IDType, description = "The ID of an object")
+    val Ids = Argument("ids", ListInputType(IDType), description = "The IDs of objects")
   }
 
   def definitionById[Ctx, Val, Res](
-      resolve: (String, Context[Ctx, Val]) ⇒ Action[Ctx, Option[Res]],
+      resolve: (String, Context[Ctx, Val]) ⇒ LeafAction[Ctx, Option[Res]],
       possibleTypes: ⇒ List[PossibleNodeObject[Ctx, Node]] = Nil,
       tags: List[FieldTag] = Nil,
       complexity: Option[(Ctx, Args, Double) ⇒ Double] = None) = {
@@ -39,15 +38,22 @@ object Node {
     val nodeField = Field("node", OptionType(interfaceType), Some("Fetches an object given its ID"),
       tags = tags,
       complexity = complexity,
-      arguments = Args.All,
+      arguments = Args.Id :: Nil,
       possibleTypes = possibleTypes map (pt ⇒ PossibleObject(pt.objectType)),
-      resolve = (ctx: Context[Ctx, Val]) ⇒ resolve(ctx.arg(Args.ID), ctx))
+      resolve = (ctx: Context[Ctx, Val]) ⇒ resolve(ctx.arg(Args.Id), ctx))
 
-    NodeDefinition(interfaceType, nodeField)
+    val nodesField = Field("nodes", ListType(OptionType(interfaceType)), Some("Fetches objects given their IDs"),
+      tags = tags,
+      complexity = complexity,
+      arguments = Args.Ids :: Nil,
+      possibleTypes = possibleTypes map (pt ⇒ PossibleObject(pt.objectType)),
+      resolve = (ctx: Context[Ctx, Val]) ⇒ Action.sequence(ctx.arg(Args.Ids).map(resolve(_, ctx))))
+
+    NodeDefinition(interfaceType, nodeField, nodesField)
   }
 
   def definition[Ctx, Val, Res](
-      resolve: (GlobalId, Context[Ctx, Val]) ⇒ Action[Ctx, Option[Res]],
+      resolve: (GlobalId, Context[Ctx, Val]) ⇒ LeafAction[Ctx, Option[Res]],
       possibleTypes: ⇒ List[PossibleNodeObject[Ctx, Node]] = Nil,
       tags: List[FieldTag] = Nil,
       complexity: Option[(Ctx, Args, Double) ⇒ Double] = None) =
@@ -110,7 +116,7 @@ case class UnknownPossibleType(value: Any) extends IllegalArgumentException(s"Un
 
 case class WrongGlobalId(id: String) extends Exception(s"Invalid Global ID: $id") with UserFacingError
 
-case class NodeDefinition[Ctx, Val, Res](interface: InterfaceType[Ctx, Res], field: Field[Ctx, Val])
+case class NodeDefinition[Ctx, Val, Res](interface: InterfaceType[Ctx, Res], nodeField: Field[Ctx, Val], nodeFields: Field[Ctx, Val])
 
 @implicitNotFound("Type ${T} is not identifiable. Please consider defining implicit instance of sangria.relay.Identifiable or sangria.relay.IdentifiableNode for type ${T} or extending sangria.relay.Node trait.")
 trait Identifiable[T] {
