@@ -1,6 +1,8 @@
 package sangria.relay
 
 import sangria.relay.util.Base64
+import sangria.schema.{IDType, ScalarAlias}
+import sangria.validation.{ValueCoercionViolation, Violation}
 
 case class GlobalId(typeName: String, id: String) {
   def asString = GlobalId.toGlobalId(this)
@@ -30,4 +32,13 @@ object GlobalId {
   }
 
   def unapply(globalId: String) = fromGlobalId(globalId)
+
+  case object IdViolation extends ValueCoercionViolation("Invalid ID")
+
+  /**
+   * Creates a type alias to support using GlobalIDs across Relay applications
+   */
+  implicit val GlobalIdTypeAlias: ScalarAlias[GlobalId, String] = ScalarAlias[GlobalId, String](IDType,
+    toScalar = _.asString,
+    fromScalar = id ⇒ GlobalId.fromGlobalId(id).fold[Either[Violation, GlobalId]](Left(IdViolation))(Right(_)))
 }
