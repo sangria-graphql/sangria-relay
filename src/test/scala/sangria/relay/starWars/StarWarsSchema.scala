@@ -1,6 +1,7 @@
 package sangria.relay.starWars
 
 import sangria.relay._
+import sangria.relay.GlobalId.GlobalIdTypeAlias
 import sangria.relay.starWars.StarWarsData.{Faction, Ship, ShipRepo}
 import sangria.schema._
 
@@ -191,18 +192,18 @@ object StarWarsSchema {
     typeName = "IntroduceShip",
     inputFields = List(
       InputField("shipName", StringType),
-      InputField("factionId", IDType)),
+      InputField("factionId", GlobalIdTypeAlias)),
     outputFields = fields(
       Field("ship", OptionType(ShipType), resolve = ctx ⇒ ctx.ctx.getShip(ctx.value.shipId)),
       Field("faction", OptionType(FactionType), resolve = ctx ⇒ ctx.ctx.getFaction(ctx.value.factionId))),
     mutateAndGetPayload = (input, ctx) ⇒ {
       val mutationId = input(Mutation.ClientMutationIdFieldName).asInstanceOf[Option[String]]
       val shipName = input("shipName").asInstanceOf[String]
-      val factionId = input("factionId").asInstanceOf[String]
+      val factionId = input("factionId").asInstanceOf[GlobalId]
 
-      val newShip = ctx.ctx.createShip(shipName, factionId)
+      val newShip = ctx.ctx.createShip(shipName, factionId.id)
 
-      ShipMutationPayload(mutationId, newShip.id, factionId)
+      ShipMutationPayload(mutationId, newShip.id, factionId.id)
     }
   )
 
