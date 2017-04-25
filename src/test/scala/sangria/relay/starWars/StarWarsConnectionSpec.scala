@@ -270,6 +270,124 @@ class StarWarsConnectionSpec extends WordSpec with Matchers with AwaitSupport {
                   "id" → "U2hpcDox",
                   "name" → "X-Wing")))))
       }
+
+      "get faction with `node` field" in {
+        val Success(doc) = QueryParser.parse(
+          """
+            query {
+              node(id: "RmFjdGlvbjox") {
+                id
+
+                ... on Faction {
+                  name
+                  ships {
+                    edges {
+                      node {
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          """)
+
+        Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be (
+          Map(
+            "data" → Map(
+              "node" →
+                Map(
+                  "id" → "RmFjdGlvbjox",
+                  "name" → "Alliance to Restore the Republic",
+                  "ships" → Map(
+                    "edges" → Vector(
+                      Map(
+                        "node" → Map(
+                          "name" → "X-Wing")),
+                      Map(
+                        "node" → Map(
+                          "name" → "Y-Wing")),
+                      Map(
+                        "node" → Map(
+                          "name" → "A-Wing")),
+                      Map(
+                        "node" → Map(
+                          "name" → "Millenium Falcon")),
+                      Map(
+                        "node" → Map(
+                          "name" → "Home One"))))))))
+      }
+
+      "list ships and factions with `nodes` fields" in {
+        val Success(doc) = QueryParser.parse(
+          """
+            query {
+              nodes(ids: ["U2hpcDox", "U2hpcDoz", "RmFjdGlvbjox", "RmFjdGlvbjoy"]) {
+                id
+
+                ... on Ship {
+                  name
+                }
+
+                ... on Faction {
+                  name
+                  ships {
+                    edges {
+                      node {
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          """)
+
+        Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be (
+          Map(
+            "data" → Map(
+              "nodes" → Vector(
+                Map(
+                  "id" → "U2hpcDox",
+                  "name" → "X-Wing"),
+                Map(
+                  "id" → "U2hpcDoz",
+                  "name" → "A-Wing"),
+                Map(
+                  "id" → "RmFjdGlvbjox",
+                  "name" → "Alliance to Restore the Republic",
+                  "ships" → Map(
+                    "edges" → Vector(
+                      Map(
+                        "node" → Map(
+                          "name" → "X-Wing")),
+                      Map(
+                        "node" → Map(
+                          "name" → "Y-Wing")),
+                      Map(
+                        "node" → Map(
+                          "name" → "A-Wing")),
+                      Map(
+                        "node" → Map(
+                          "name" → "Millenium Falcon")),
+                      Map(
+                        "node" → Map(
+                          "name" → "Home One"))))),
+                Map(
+                  "id" → "RmFjdGlvbjoy",
+                  "name" → "Galactic Empire",
+                  "ships" → Map(
+                    "edges" → Vector(
+                      Map(
+                        "node" → Map(
+                          "name" → "TIE Fighter")),
+                      Map(
+                        "node" → Map(
+                          "name" → "TIE Interceptor")),
+                      Map(
+                        "node" → Map(
+                          "name" → "Executor")))))))))
+      }
     }
   }
 }

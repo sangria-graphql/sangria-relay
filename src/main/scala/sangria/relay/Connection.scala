@@ -135,12 +135,12 @@ object Connection {
     if (idx  >= 0) Some(offsetToCursor(idx)) else None
   }
 
-  private def getOffset(cursor: Option[String], defaultOffset: Int) =
+  private def getOffset(cursor: Option[String], defaultOffset: Int): Int =
     cursor flatMap cursorToOffset getOrElse defaultOffset
 
-  def offsetToCursor(offset: Int) = Base64.encode(CursorPrefix + offset)
+  def offsetToCursor(offset: Int): String = Base64.encode(CursorPrefix + offset)
 
-  def cursorToOffset(cursor: String) =
+  def cursorToOffset(cursor: String): Option[Int] =
     GlobalId.fromGlobalId(cursor).flatMap(id ⇒ Try(id.id.toInt).toOption)
 }
 

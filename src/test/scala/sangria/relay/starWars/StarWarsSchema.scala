@@ -89,7 +89,7 @@ object StarWarsSchema {
     if (id.typeName == "Faction") ctx.ctx.getFaction(id.id)
     else if (id.typeName == "Ship") ctx.ctx.getShip(id.id)
     else None
-  }, Node.possibleNodeTypes[ShipRepo, Node](ShipType))
+  }, Node.possibleNodeTypes[ShipRepo, Node](ShipType, FactionType))
 
   def idFields[T : Identifiable] = fields[Unit, T](
     Node.globalIdField,
