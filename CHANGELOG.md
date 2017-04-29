@@ -1,3 +1,8 @@
+## v1.2.0 (2017-04-29)
+
+* Updated sangria to v1.2.0
+* Add the `GlobalIdTypeAlias` for `IDType` (#19)
+
 ## v1.1.0 (2017-03-11)
 
 * Updated sangria to v1.1.0
