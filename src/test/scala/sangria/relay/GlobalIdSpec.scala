@@ -144,4 +144,22 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
               "text" → "ipsum"))))
     }
   }
+
+  "GlobalId.fromGlobalId" should {
+    "return None for empty IDs" in {
+      GlobalId.fromGlobalId("") shouldBe empty
+    }
+
+    "return None for incorrect Base64 IDs" in {
+      GlobalId.fromGlobalId("123") shouldBe empty
+    }
+
+    "return None for IDs where the decoded value does not contain a colon" in {
+      GlobalId.fromGlobalId("UG9zdA==") shouldBe empty
+    }
+
+    "return None for IDs where the decoded value does contain a colon at the end" in {
+      GlobalId.fromGlobalId("UG9zdDo=") shouldBe empty
+    }
+  }
 }

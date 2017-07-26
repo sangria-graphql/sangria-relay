@@ -18,14 +18,14 @@ object GlobalId {
   def toGlobalId(typeName: String, id: String): String = Base64.encode(s"$typeName:$id")
 
   /**
-   * Takes the "global ID" created by toGlobalID, and retuns the type name and ID
+   * Takes the "global ID" created by toGlobalID, and returns the type name and ID
    * used to create it.
    */
   def fromGlobalId(globalId: String) = {
     val decoded = Base64.decode(globalId)
     val idx = decoded.indexOf(":")
 
-    if (idx < 0 && (decoded.size - 1) != idx)
+    if (idx == -1 || idx == decoded.length - 1)
       None
     else
       Some(GlobalId(decoded.substring(0, idx), decoded.substring(idx + 1)))
