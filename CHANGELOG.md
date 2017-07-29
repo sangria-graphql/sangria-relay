@@ -1,3 +1,7 @@
+## Upcoming
+
+* Fixed global id parsing in certain cases (#25). Big thanks to @Malax for this contribution!
+
 ## v1.2.1 (2017-06-17)
 
 * Updated sangria to v1.2.2
