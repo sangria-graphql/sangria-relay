@@ -81,7 +81,7 @@ object Connection {
 
   def empty[T] = DefaultConnection(PageInfo.empty, Vector.empty[Edge[T]])
 
-  def connectionFromFutureSeq[T](seq: Future[Seq[T]], args: ConnectionArgs)(implicit ec: ExecutionContext): Future[Connection[T] ]=
+  def connectionFromFutureSeq[T](seq: Future[Seq[T]], args: ConnectionArgs)(implicit ec: ExecutionContext): Future[Connection[T]] =
     seq map (connectionFromSeq(_, args))
 
   def connectionFromSeq[T](seq: Seq[T], args: ConnectionArgs): Connection[T] =
