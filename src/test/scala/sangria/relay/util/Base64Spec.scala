@@ -23,11 +23,27 @@ class Base64Spec extends WordSpec with Matchers {
     }
 
     "decode base64 string" in {
-      Base64.decode(TestBase64) should be (TestText)
+      Base64.decode(TestBase64) should be (Some(TestText))
     }
 
     "decode UTF-8 base64 string" in {
-      Base64.decode(TestBase64) should be (TestText)
+      Base64.decode(TestBase64) should be (Some(TestText))
+    }
+
+    "return an empty string for an empty string" in {
+      Base64.decode("") should be (Some(""))
+    }
+
+    "return None for base64 strings with to little valid bits" in {
+      Base64.decode("a3222==") should be (None)
+    }
+
+    "return None for base64 strings with invalid characters" in {
+      Base64.decode("foobär23") should be (None)
+    }
+
+    "return None for base64 strings with wrong 4-byte ending unit" in {
+      Base64.decode("TQ=") should be (None)
     }
   }
 }
