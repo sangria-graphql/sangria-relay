@@ -22,13 +22,14 @@ object GlobalId {
    * used to create it.
    */
   def fromGlobalId(globalId: String) = {
-    val decoded = Base64.decode(globalId)
-    val idx = decoded.indexOf(":")
+    Base64.decode(globalId) flatMap { decoded =>
+      val idx = decoded.indexOf(":")
 
-    if (idx == -1 || idx == decoded.length - 1)
-      None
-    else
-      Some(GlobalId(decoded.substring(0, idx), decoded.substring(idx + 1)))
+      if (idx == -1 || idx == decoded.length - 1)
+        None
+      else
+        Some(GlobalId(decoded.substring(0, idx), decoded.substring(idx + 1)))
+    }
   }
 
   def unapply(globalId: String) = fromGlobalId(globalId)
