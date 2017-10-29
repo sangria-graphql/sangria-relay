@@ -7,7 +7,7 @@
 SBT Configuration:
 
 ```scala
-libraryDependencies += "org.sangria-graphql" %% "sangria-relay" % "1.3.0"
+libraryDependencies += "org.sangria-graphql" %% "sangria-relay" % "1.3.1"
 ```
 
 More info and the documentation can be found in the project home page:
