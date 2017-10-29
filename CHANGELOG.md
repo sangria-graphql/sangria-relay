@@ -1,3 +1,9 @@
+## v1.3.1 (2017-10-29)
+
+* Fixed parsing behaviour of invalid base64 strings (#27, #28). Big thanks to @Malax for this fix!
+* Fixed ClassCastException in Node.pluralIdentifyingRootFieldFut (#29).
+* Updated sangria to v1.3.1
+
 ## v1.3.0 (2017-08-19)
 
 * Fixed global id parsing in certain cases (#25). Big thanks to @Malax for this contribution!
