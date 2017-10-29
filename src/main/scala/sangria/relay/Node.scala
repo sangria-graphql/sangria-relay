@@ -106,7 +106,7 @@ object Node {
       tags = tags,
       complexity = complexity,
       arguments = Argument(argName, ListInputType(argType)) :: Nil,
-      resolve = (ctx: Context[Ctx, Val]) ⇒ Future.sequence(ctx.arg[List[T]](argName) map (resolveSingleInput(_, ctx))))
+      resolve = (ctx: Context[Ctx, Val]) ⇒ Future.sequence(ctx.arg[Seq[T]](argName) map (resolveSingleInput(_, ctx))))
 
   def possibleNodeTypes[Ctx, Abstract](objectTypes: PossibleNodeObject[Ctx, Abstract]*): List[PossibleNodeObject[Ctx, Abstract]] =
     objectTypes.toList
