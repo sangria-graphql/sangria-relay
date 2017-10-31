@@ -1,3 +1,7 @@
+## v1.3.2 (2017-11-01)
+
+* Updated sangria to v1.3.2
+
 ## v1.3.1 (2017-10-29)
 
 * Fixed parsing behaviour of invalid base64 strings (#27, #28). Big thanks to @Malax for this fix!
