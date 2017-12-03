@@ -1,3 +1,7 @@
+## v1.3.3 (2017-12-03)
+
+* Updated sangria to v1.3.3
+
 ## v1.3.2 (2017-11-01)
 
 * Updated sangria to v1.3.2
