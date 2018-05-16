@@ -37,14 +37,23 @@ object Connection {
     nodeType: OutputType[Val],
     edgeFields: ⇒ List[Field[Ctx, Edge[Val]]] = Nil,
     connectionFields: ⇒ List[Field[Ctx, Conn[Val]]] = Nil
-  )(implicit connEv: ConnectionLike[Conn, Val], classEv: ClassTag[Conn[Val]]) = {
+  )(implicit connEv: ConnectionLike[Conn, Val, Edge[Val]], classEv: ClassTag[Conn[Val]]) = {
+    definitionWithEdge[Ctx, Conn, Val, Edge[Val]](name, nodeType, edgeFields, connectionFields)
+  }
+
+  def definitionWithEdge[Ctx, Conn[_], Val, E <: Edge[Val]](
+    name: String,
+    nodeType: OutputType[Val],
+    edgeFields: ⇒ List[Field[Ctx, E]] = Nil,
+    connectionFields: ⇒ List[Field[Ctx, Conn[Val]]] = Nil
+  )(implicit connEv: ConnectionLike[Conn, Val, E], classEv: ClassTag[Conn[Val]], classE: ClassTag[E]) = {
     if (!isValidNodeType(nodeType))
       throw new IllegalArgumentException("Node type is invalid. It must be either a Scalar, Enum, Object, Interface, Union, " +
           "or a Non‐Null wrapper around one of those types. Notably, this field cannot return a list.")
 
-    val edgeType = ObjectType[Ctx, Edge[Val]](name + "Edge", "An edge in a connection.",
+    val edgeType = ObjectType[Ctx, E](name + "Edge", "An edge in a connection.",
       () ⇒ {
-        List[Field[Ctx, Edge[Val]]](
+        List[Field[Ctx, E]](
           Field("node", nodeType, Some("The item at the end of the edge."), resolve = _.value.node),
           Field("cursor", StringType, Some("A cursor for use in pagination."), resolve = _.value.cursor)
         ) ++ edgeFields
@@ -59,7 +68,7 @@ object Connection {
         ) ++ connectionFields
       })
 
-    ConnectionDefinition(edgeType, connectionType)
+    ConnectionDefinition[Ctx, Conn[Val], Val, E](edgeType, connectionType)
   }
 
   /**
@@ -146,7 +155,7 @@ object Connection {
 
 case class SliceInfo(sliceStart: Int, size: Int)
 
-case class ConnectionDefinition[Ctx, Conn, Val](edgeType: ObjectType[Ctx, Edge[Val]], connectionType: ObjectType[Ctx, Conn])
+case class ConnectionDefinition[Ctx, Conn, Val, E <: Edge[Val]](edgeType: ObjectType[Ctx, E], connectionType: ObjectType[Ctx, Conn])
 
 case class DefaultConnection[T](pageInfo: PageInfo, edges: Seq[Edge[T]]) extends Connection[T]
 
@@ -172,19 +181,19 @@ object PageInfo {
 }
 
 @implicitNotFound("Type ${T} can't be used as a Connection. Please consider defining implicit instance of sangria.relay.ConnectionLike for type ${T} or extending sangria.relay.Connection trait.")
-trait ConnectionLike[T[_], E] {
-  def pageInfo(conn: T[E]): PageInfo
-  def edges(conn: T[E]): Seq[Edge[E]]
+trait ConnectionLike[T[_], Val, E <: Edge[Val]] {
+  def pageInfo(conn: T[Val]): PageInfo
+  def edges(conn: T[Val]): Seq[E]
 }
 
 object ConnectionLike {
-  private object ConnectionIsConnectionLike extends ConnectionLike[Connection, Any] {
+  private object ConnectionIsConnectionLike extends ConnectionLike[Connection, Any, Edge[Any]] {
     override def pageInfo(conn: Connection[Any]) = conn.pageInfo
     override def edges(conn: Connection[Any]) = conn.edges
   }
 
-  implicit def connectionIsConnectionLike[E, T[_]]: ConnectionLike[T, E] =
-    ConnectionIsConnectionLike.asInstanceOf[ConnectionLike[T, E]]
+  implicit def connectionIsConnectionLike[E <: Edge[Val], Val, T[_]]: ConnectionLike[T, Val, E] =
+    ConnectionIsConnectionLike.asInstanceOf[ConnectionLike[T, Val, E]]
 }
 
 case class ConnectionArgs(before: Option[String] = None, after: Option[String] = None, first: Option[Int] = None, last: Option[Int] = None)
