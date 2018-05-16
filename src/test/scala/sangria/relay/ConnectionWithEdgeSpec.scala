@@ -125,7 +125,7 @@ class ConnectionWithEdgeSpec extends WordSpec with Matchers with AwaitSupport {
         """)
 
       val r = Executor.execute(schema, doc, userContext = new Repo).await
-      println(r.toString)
+
       r should be (
         Map(
           "data" -> Map(
