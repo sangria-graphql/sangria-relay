@@ -90,7 +90,7 @@ class ConnectionWithEdgeSpec extends WordSpec with Matchers with AwaitSupport {
 
 
   val ConnectionDefinition(_, userConnection) =
-    Connection.definitionWithEdge[Repo, Connection, User, UserEdge](
+    Connection.definitionWithEdge[Repo, PageInfo, Connection, User, UserEdge](
       name = "User",
       nodeType = UserType,
       edgeFields = fields(

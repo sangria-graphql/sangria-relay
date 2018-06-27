@@ -1,18 +1,17 @@
 package sangria.relay
 
-import sangria.execution.{ExecutionError, UserFacingError}
-
-import language.higherKinds
+import sangria.execution.UserFacingError
 import sangria.relay.util.Base64
 import sangria.schema._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.annotation.implicitNotFound
+import scala.concurrent.{ ExecutionContext, Future }
+import scala.language.higherKinds
 import scala.reflect.ClassTag
 import scala.util.Try
-import scala.annotation.implicitNotFound
 
-trait Connection[T] {
-  def pageInfo: PageInfo
+trait Connection[+T, +P <: PageInfo] {
+  def pageInfo: P
   def edges: Seq[Edge[T]]
 }
 
@@ -26,27 +25,30 @@ object Connection {
     val All = Before :: After :: First :: Last :: Nil
   }
 
+  @annotation.tailrec
   def isValidNodeType[Val](nodeType: OutputType[Val]): Boolean = nodeType match {
     case _: ScalarType[_] | _: EnumType[_] | _: CompositeType[_] ⇒ true
     case OptionType(ofType) ⇒ isValidNodeType(ofType)
     case _ ⇒ false
   }
 
-  def definition[Ctx, Conn[_], Val](
+  def definition[Ctx, Conn[_, _ <: PageInfo], Val](
     name: String,
     nodeType: OutputType[Val],
     edgeFields: ⇒ List[Field[Ctx, Edge[Val]]] = Nil,
-    connectionFields: ⇒ List[Field[Ctx, Conn[Val]]] = Nil
-  )(implicit connEv: ConnectionLike[Conn, Val, Edge[Val]], classEv: ClassTag[Conn[Val]]) = {
-    definitionWithEdge[Ctx, Conn, Val, Edge[Val]](name, nodeType, edgeFields, connectionFields)
+    pageInfoFields: ⇒ List[Field[Ctx, PageInfo]] = Nil,
+    connectionFields: ⇒ List[Field[Ctx, Conn[Val, PageInfo]]] = Nil
+  )(implicit connEv: ConnectionLike[Conn, PageInfo, Val, Edge[Val]], classEv: ClassTag[Conn[Val, PageInfo]]) = {
+    definitionWithEdge[Ctx, PageInfo, Conn, Val, Edge[Val]](name, nodeType, edgeFields, pageInfoFields, connectionFields)
   }
 
-  def definitionWithEdge[Ctx, Conn[_], Val, E <: Edge[Val]](
+  def definitionWithEdge[Ctx, P <: PageInfo, Conn[_, _ <: PageInfo], Val, E <: Edge[Val]](
     name: String,
     nodeType: OutputType[Val],
     edgeFields: ⇒ List[Field[Ctx, E]] = Nil,
-    connectionFields: ⇒ List[Field[Ctx, Conn[Val]]] = Nil
-  )(implicit connEv: ConnectionLike[Conn, Val, E], classEv: ClassTag[Conn[Val]], classE: ClassTag[E]) = {
+    pageInfoFields: ⇒ List[Field[Ctx, P]] = Nil,
+    connectionFields: ⇒ List[Field[Ctx, Conn[Val, P]]] = Nil
+  )(implicit connEv: ConnectionLike[Conn, P, Val, E], classEv: ClassTag[Conn[Val, P]], classE: ClassTag[E], classP: ClassTag[P]) = {
     if (!isValidNodeType(nodeType))
       throw new IllegalArgumentException("Node type is invalid. It must be either a Scalar, Enum, Object, Interface, Union, " +
           "or a Non‐Null wrapper around one of those types. Notably, this field cannot return a list.")
@@ -59,52 +61,51 @@ object Connection {
         ) ++ edgeFields
       })
 
-    val connectionType = ObjectType[Ctx, Conn[Val]](name + "Connection", "A connection to a list of items.",
+    val pageInfoType = ObjectType(name + "PageInfo", "Information about pagination in a connection.",
       () ⇒ {
-        List[Field[Ctx, Conn[Val]]](
-          Field("pageInfo", PageInfoType, Some("Information to aid in pagination."), resolve = ctx ⇒ connEv.pageInfo(ctx.value)),
+        List[Field[Ctx, P]](
+          Field("hasNextPage", BooleanType, Some("When paginating forwards, are there more items?"),
+            resolve = _.value.hasNextPage),
+          Field("hasPreviousPage", BooleanType, Some("When paginating backwards, are there more items?"),
+            resolve = _.value.hasPreviousPage),
+          Field("startCursor", OptionType(StringType), Some("When paginating backwards, the cursor to continue."),
+            resolve = _.value.startCursor),
+          Field("endCursor", OptionType(StringType), Some("When paginating forwards, the cursor to continue."),
+            resolve = _.value.endCursor)
+        ) ++ pageInfoFields
+      })
+
+    val connectionType = ObjectType[Ctx, Conn[Val, P]](name + "Connection", "A connection to a list of items.",
+      () ⇒ {
+        List[Field[Ctx, Conn[Val, P]]](
+          Field("pageInfo", pageInfoType, Some("Information to aid in pagination."), resolve = ctx ⇒ connEv.pageInfo(ctx.value)),
           Field("edges", OptionType(ListType(OptionType(edgeType))), Some("A list of edges."),
             resolve = ctx ⇒ connEv.edges(ctx.value) map (Some(_)))
         ) ++ connectionFields
       })
 
-    ConnectionDefinition[Ctx, Conn[Val], Val, E](edgeType, connectionType)
+    ConnectionDefinition[Ctx, Conn[Val, P], Val, E](edgeType, connectionType)
   }
-
-  /**
-   * The common page info type used by all connections.
-   */
-  val PageInfoType = ObjectType("PageInfo", "Information about pagination in a connection.",
-    fields[Unit, PageInfo](
-      Field("hasNextPage", BooleanType, Some("When paginating forwards, are there more items?"),
-        resolve = _.value.hasNextPage),
-      Field("hasPreviousPage", BooleanType, Some("When paginating backwards, are there more items?"),
-        resolve = _.value.hasPreviousPage),
-      Field("startCursor", OptionType(StringType), Some("When paginating backwards, the cursor to continue."),
-        resolve = _.value.startCursor),
-      Field("endCursor", OptionType(StringType), Some("When paginating forwards, the cursor to continue."),
-        resolve = _.value.endCursor)
-    ))
 
   val CursorPrefix = "arrayconnection:"
 
   def empty[T] = DefaultConnection(PageInfo.empty, Vector.empty[Edge[T]])
 
-  def connectionFromFutureSeq[T](seq: Future[Seq[T]], args: ConnectionArgs)(implicit ec: ExecutionContext): Future[Connection[T]] =
+  def connectionFromFutureSeq[T](seq: Future[Seq[T]], args: ConnectionArgs)(implicit ec: ExecutionContext): Future[Connection[T, PageInfo]] =
     seq map (connectionFromSeq(_, args))
 
-  def connectionFromSeq[T](seq: Seq[T], args: ConnectionArgs): Connection[T] =
+  def connectionFromSeq[T](seq: Seq[T], args: ConnectionArgs): Connection[T, PageInfo] =
     connectionFromSeq(seq, args, SliceInfo(0, seq.size))
 
-  def connectionFromFutureSeq[T](seq: Future[Seq[T]], args: ConnectionArgs, sliceInfo: SliceInfo)(implicit ec: ExecutionContext): Future[Connection[T]] =
+  def connectionFromFutureSeq[T](seq: Future[Seq[T]], args: ConnectionArgs, sliceInfo: SliceInfo)(implicit ec: ExecutionContext): Future[Connection[T, PageInfo]] =
     seq map (connectionFromSeq(_, args, sliceInfo))
 
-  def connectionFromSeq[T](seqSlice: Seq[T], args: ConnectionArgs, sliceInfo: SliceInfo): Connection[T] = {
+  def connectionFromSeq[T](seqSlice: Seq[T], args: ConnectionArgs, sliceInfo: SliceInfo): Connection[T, PageInfo] = {
     import args._
     import sliceInfo._
 
-    first.foreach(f ⇒ if (f < 0) throw new ConnectionArgumentValidationError("Argument 'first' must be a non-negative integer"))
-    last.foreach(l ⇒ if (l < 0) throw new ConnectionArgumentValidationError("Argument 'last' must be a non-negative integer"))
+    first.foreach(f ⇒ if (f < 0) throw ConnectionArgumentValidationError("Argument 'first' must be a non-negative integer"))
+    last.foreach(l ⇒ if (l < 0) throw ConnectionArgumentValidationError("Argument 'last' must be a non-negative integer"))
 
     val sliceEnd = sliceStart + seqSlice.size
     val beforeOffset = getOffset(before, size)
@@ -138,7 +139,7 @@ object Connection {
     )
   }
 
-  def cursorForObjectInConnection[T, E](coll: Seq[T], obj: E) = {
+  def cursorForObjectInConnection[T, E](coll: Seq[T], obj: E): Option[String] = {
     val idx = coll.indexOf(obj)
 
     if (idx  >= 0) Some(offsetToCursor(idx)) else None
@@ -157,9 +158,9 @@ case class SliceInfo(sliceStart: Int, size: Int)
 
 case class ConnectionDefinition[Ctx, Conn, Val, E <: Edge[Val]](edgeType: ObjectType[Ctx, E], connectionType: ObjectType[Ctx, Conn])
 
-case class DefaultConnection[T](pageInfo: PageInfo, edges: Seq[Edge[T]]) extends Connection[T]
+case class DefaultConnection[T](pageInfo: PageInfo, edges: Seq[Edge[T]]) extends Connection[T, PageInfo]
 
-trait Edge[T] {
+trait Edge[+T] {
   def node: T
   def cursor: String
 }
@@ -170,30 +171,44 @@ object Edge {
 
 case class DefaultEdge[T](node: T, cursor: String) extends Edge[T]
 
-case class PageInfo(
+trait PageInfo {
+  def hasNextPage: Boolean
+  def hasPreviousPage: Boolean
+  def startCursor: Option[String]
+  def endCursor: Option[String]
+}
+
+case class DefaultPageInfo(
   hasNextPage: Boolean = false,
   hasPreviousPage: Boolean = false,
   startCursor: Option[String] = None,
-  endCursor: Option[String] = None)
+  endCursor: Option[String] = None) extends PageInfo
 
 object PageInfo {
-  def empty = PageInfo()
+  def empty: DefaultPageInfo = DefaultPageInfo()
+
+  def apply(
+    hasNextPage: Boolean = false,
+    hasPreviousPage: Boolean = false,
+    startCursor: Option[String] = None,
+    endCursor: Option[String] = None
+  ): PageInfo = DefaultPageInfo(hasNextPage, hasPreviousPage, startCursor, endCursor)
 }
 
 @implicitNotFound("Type ${T} can't be used as a Connection. Please consider defining implicit instance of sangria.relay.ConnectionLike for type ${T} or extending sangria.relay.Connection trait.")
-trait ConnectionLike[T[_], Val, E <: Edge[Val]] {
-  def pageInfo(conn: T[Val]): PageInfo
-  def edges(conn: T[Val]): Seq[E]
+trait ConnectionLike[T[_, _ <: PageInfo], P <: PageInfo, Val, E <: Edge[Val]] {
+  def pageInfo(conn: T[Val, P]): P
+  def edges(conn: T[Val, P]): Seq[E]
 }
 
 object ConnectionLike {
-  private object ConnectionIsConnectionLike extends ConnectionLike[Connection, Any, Edge[Any]] {
-    override def pageInfo(conn: Connection[Any]) = conn.pageInfo
-    override def edges(conn: Connection[Any]) = conn.edges
+  private object ConnectionIsConnectionLike extends ConnectionLike[Connection, PageInfo, Any, Edge[Any]] {
+    override def pageInfo(conn: Connection[Any, PageInfo]) = conn.pageInfo
+    override def edges(conn: Connection[Any, PageInfo]) = conn.edges
   }
 
-  implicit def connectionIsConnectionLike[E <: Edge[Val], Val, T[_]]: ConnectionLike[T, Val, E] =
-    ConnectionIsConnectionLike.asInstanceOf[ConnectionLike[T, Val, E]]
+  implicit def connectionIsConnectionLike[E <: Edge[Val], P <: PageInfo, Val, T[_, _ <: PageInfo]]: ConnectionLike[T, P, Val, E] =
+    ConnectionIsConnectionLike.asInstanceOf[ConnectionLike[T, P, Val, E]]
 }
 
 case class ConnectionArgs(before: Option[String] = None, after: Option[String] = None, first: Option[Int] = None, last: Option[Int] = None)
