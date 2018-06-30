@@ -25,7 +25,6 @@ object Connection {
     val All = Before :: After :: First :: Last :: Nil
   }
 
-  @annotation.tailrec
   def isValidNodeType[Val](nodeType: OutputType[Val]): Boolean = nodeType match {
     case _: ScalarType[_] | _: EnumType[_] | _: CompositeType[_] ⇒ true
     case OptionType(ofType) ⇒ isValidNodeType(ofType)
