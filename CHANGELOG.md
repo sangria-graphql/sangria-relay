@@ -1,6 +1,7 @@
-## Upcoming
+## v1.4.2 (2018-08-13)
 
-* Added `ConnectionHelper.definitionWithEdge` which allows to parametrize the edge type (#31). Big thanks to @phrojoe for this contribution! 
+* Added `ConnectionHelper.definitionWithEdge` which allows to parametrize the edge type (#31). Big thanks to @phrojoe for this contribution!
+* Updated sangria to v1.4.2 
 
 ## v1.4.1 (2018-05-12)
 
