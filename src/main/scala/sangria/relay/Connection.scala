@@ -34,16 +34,18 @@ object Connection {
   def definition[Ctx, Conn[_, _ <: PageInfo], Val](
     name: String,
     nodeType: OutputType[Val],
+    pageInfoType: OutputType[PageInfo] = PageInfo.defaultPageInfoType,
     edgeFields: ⇒ List[Field[Ctx, Edge[Val]]] = Nil,
     pageInfoFields: ⇒ List[Field[Ctx, PageInfo]] = Nil,
     connectionFields: ⇒ List[Field[Ctx, Conn[Val, PageInfo]]] = Nil
   )(implicit connEv: ConnectionLike[Conn, PageInfo, Val, Edge[Val]], classEv: ClassTag[Conn[Val, PageInfo]]) = {
-    definitionWithEdge[Ctx, PageInfo, Conn, Val, Edge[Val]](name, nodeType, edgeFields, pageInfoFields, connectionFields)
+    definitionWithEdge[Ctx, PageInfo, Conn, Val, Edge[Val]](name, nodeType, pageInfoType, edgeFields, pageInfoFields, connectionFields)
   }
 
   def definitionWithEdge[Ctx, P <: PageInfo, Conn[_, _ <: PageInfo], Val, E <: Edge[Val]](
     name: String,
     nodeType: OutputType[Val],
+    pageInfoType: OutputType[P] = PageInfo.defaultPageInfoType,
     edgeFields: ⇒ List[Field[Ctx, E]] = Nil,
     pageInfoFields: ⇒ List[Field[Ctx, P]] = Nil,
     connectionFields: ⇒ List[Field[Ctx, Conn[Val, P]]] = Nil
@@ -58,20 +60,6 @@ object Connection {
           Field("node", nodeType, Some("The item at the end of the edge."), resolve = _.value.node),
           Field("cursor", StringType, Some("A cursor for use in pagination."), resolve = _.value.cursor)
         ) ++ edgeFields
-      })
-
-    val pageInfoType = ObjectType(name + "PageInfo", "Information about pagination in a connection.",
-      () ⇒ {
-        List[Field[Ctx, P]](
-          Field("hasNextPage", BooleanType, Some("When paginating forwards, are there more items?"),
-            resolve = _.value.hasNextPage),
-          Field("hasPreviousPage", BooleanType, Some("When paginating backwards, are there more items?"),
-            resolve = _.value.hasPreviousPage),
-          Field("startCursor", OptionType(StringType), Some("When paginating backwards, the cursor to continue."),
-            resolve = _.value.startCursor),
-          Field("endCursor", OptionType(StringType), Some("When paginating forwards, the cursor to continue."),
-            resolve = _.value.endCursor)
-        ) ++ pageInfoFields
       })
 
     val connectionType = ObjectType[Ctx, Conn[Val, P]](name + "Connection", "A connection to a list of items.",
@@ -192,6 +180,21 @@ object PageInfo {
     startCursor: Option[String] = None,
     endCursor: Option[String] = None
   ): PageInfo = DefaultPageInfo(hasNextPage, hasPreviousPage, startCursor, endCursor)
+
+  def defaultPageInfoType[Ctx, P <: PageInfo : ClassTag]: ObjectType[Ctx, P] =
+    ObjectType("PageInfo", "Information about pagination in a connection.",
+    () ⇒ {
+      List[Field[Ctx, P]](
+        Field("hasNextPage", BooleanType, Some("When paginating forwards, are there more items?"),
+          resolve = _.value.hasNextPage),
+        Field("hasPreviousPage", BooleanType, Some("When paginating backwards, are there more items?"),
+          resolve = _.value.hasPreviousPage),
+        Field("startCursor", OptionType(StringType), Some("When paginating backwards, the cursor to continue."),
+          resolve = _.value.startCursor),
+        Field("endCursor", OptionType(StringType), Some("When paginating forwards, the cursor to continue."),
+          resolve = _.value.endCursor)
+      )
+    })
 }
 
 @implicitNotFound("Type ${T} can't be used as a Connection. Please consider defining implicit instance of sangria.relay.ConnectionLike for type ${T} or extending sangria.relay.Connection trait.")

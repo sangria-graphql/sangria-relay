@@ -70,10 +70,27 @@ class ConnectionWithCustomPageInfoSpec extends WordSpec with Matchers with Await
     Field("description", StringType, resolve = _.value.description)
   ))
 
+  val customPageInfoType: ObjectType[Repo, CustomPageInfo] =
+    ObjectType("CustomPageInfo",
+      () => fields(
+        Field("hasNextPage", BooleanType, Some("When paginating forwards, are there more items?"),
+          resolve = _.value.hasNextPage),
+        Field("hasPreviousPage", BooleanType, Some("When paginating backwards, are there more items?"),
+          resolve = _.value.hasPreviousPage),
+        Field("startCursor", OptionType(StringType), Some("When paginating backwards, the cursor to continue."),
+          resolve = _.value.startCursor),
+        Field("endCursor", OptionType(StringType), Some("When paginating forwards, the cursor to continue."),
+          resolve = _.value.endCursor),
+        Field("currentPage", IntType, Some("When paginating, where is the cursor?"),
+          resolve = _.value.currentPage)
+      )
+    )
+
   val ConnectionDefinition(_, taskConnection) =
     Connection.definitionWithEdge[Repo, CustomPageInfo, CustomConnection, Task, Edge[Task]](
       name = "Task",
       nodeType = TaskType,
+      pageInfoType = customPageInfoType,
       pageInfoFields = fields(
         Field("currentPage", IntType, resolve = _.value.currentPage)
       )

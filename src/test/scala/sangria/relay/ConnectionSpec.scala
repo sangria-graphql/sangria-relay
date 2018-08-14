@@ -85,6 +85,9 @@ class ConnectionSpec extends WordSpec with Matchers with AwaitSupport {
             user {
               friends(first: 2) {
                 totalCount
+                pageInfo {
+                  hasNextPage
+                }
                 edges {
                   friendshipTime
                   node {
@@ -114,6 +117,10 @@ class ConnectionSpec extends WordSpec with Matchers with AwaitSupport {
             "user" → Map(
               "friends" → Map(
                 "totalCount" → 5,
+                "pageInfo" ->
+                  Map(
+                    "hasNextPage" -> true
+                  ),
                 "edges" → List(
                   Map(
                     "friendshipTime" → "Yesterday",
