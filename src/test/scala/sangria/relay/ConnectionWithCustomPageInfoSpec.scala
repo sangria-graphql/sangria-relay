@@ -24,9 +24,15 @@ class ConnectionWithCustomPageInfoSpec extends WordSpec with Matchers with Await
   /**
    * custom Connection includes CustomPageInfo
    */
-  case class CustomConnection[T, P <: PageInfo](
+  case class CustomConnection[T](
     pageInfo: CustomPageInfo,
-    edges: Seq[Edge[T]]) extends Connection[T, CustomPageInfo]
+    edges: Seq[Edge[T]])
+
+  implicit def customConnectionLike[T] = new ConnectionLike[CustomConnection, CustomPageInfo, T, Edge[T]] {
+    override def pageInfo(conn: CustomConnection[T]): CustomPageInfo = conn.pageInfo
+    override def edges(conn: CustomConnection[T]): Seq[Edge[T]] = conn.edges
+  }
+
 
   case class User(id: String, name: String)
   case class Task(id: String, userId: String, description: String)
@@ -90,10 +96,7 @@ class ConnectionWithCustomPageInfoSpec extends WordSpec with Matchers with Await
     Connection.definitionWithEdge[Repo, CustomPageInfo, CustomConnection, Task, Edge[Task]](
       name = "Task",
       nodeType = TaskType,
-      pageInfoType = customPageInfoType,
-      pageInfoFields = fields(
-        Field("currentPage", IntType, resolve = _.value.currentPage)
-      )
+      pageInfoType = customPageInfoType
     )
 
   private object Args {
@@ -114,7 +117,7 @@ class ConnectionWithCustomPageInfoSpec extends WordSpec with Matchers with Await
             (_totalPage.toInt, pageNo, _edges)
         }
 
-        CustomConnection[Task, CustomPageInfo](
+        CustomConnection[Task](
           CustomPageInfo(
             currentPage,
             hasNextPage = currentPage < totalPage,
