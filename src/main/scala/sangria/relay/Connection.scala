@@ -34,19 +34,18 @@ object Connection {
   def definition[Ctx, Conn[_], Val](
     name: String,
     nodeType: OutputType[Val],
-    pageInfoType: OutputType[PageInfo] = DefaultPageInfo.pageInfoType,
     edgeFields: ⇒ List[Field[Ctx, Edge[Val]]] = Nil,
     connectionFields: ⇒ List[Field[Ctx, Conn[Val]]] = Nil
   )(implicit connEv: ConnectionLike[Conn, PageInfo, Val, Edge[Val]], classEv: ClassTag[Conn[Val]]) = {
-    definitionWithEdge[Ctx, PageInfo, Conn, Val, Edge[Val]](name, nodeType, pageInfoType, edgeFields, connectionFields)
+    definitionWithEdge[Ctx, DefaultPageInfo, Conn, Val, Edge[Val]](name, nodeType, edgeFields, connectionFields)
   }
 
   def definitionWithEdge[Ctx, P <: PageInfo, Conn[_], Val, E <: Edge[Val]](
     name: String,
     nodeType: OutputType[Val],
-    pageInfoType: OutputType[P] = DefaultPageInfo.pageInfoType,
     edgeFields: ⇒ List[Field[Ctx, E]] = Nil,
-    connectionFields: ⇒ List[Field[Ctx, Conn[Val]]] = Nil
+    connectionFields: ⇒ List[Field[Ctx, Conn[Val]]] = Nil,
+    pageInfoType: OutputType[P] = DefaultPageInfo.pageInfoType
   )(implicit connEv: ConnectionLike[Conn, P, Val, E], classEv: ClassTag[Conn[Val]], classE: ClassTag[E], classP: ClassTag[P]) = {
     if (!isValidNodeType(nodeType))
       throw new IllegalArgumentException("Node type is invalid. It must be either a Scalar, Enum, Object, Interface, Union, " +
