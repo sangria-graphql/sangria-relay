@@ -36,7 +36,7 @@ object DebugUtil {
             case ot: OperationType => "OperationType." + ot
             case aGenMap: GenMap[_, _] =>
               (if (indentMap) indent(level + 1) else "") + "Map(\n" +
-                aGenMap.toIterator.map { case (key, value) =>
+                aGenMap.iterator.map { case (key, value) =>
                   indent(level + 1) + loop(key, level) + " -> " + loop(value, level + 1, indentMap = false, indentLists = true)
                 }.mkString(",\n") + ")"
             case list: scala.collection.immutable.List[_] =>
