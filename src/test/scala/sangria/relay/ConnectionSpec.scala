@@ -42,12 +42,12 @@ class ConnectionSpec extends WordSpec with Matchers with AwaitSupport {
     Field("tails", IntType, resolve = _.value.tails)
   ))
 
-  val UserType: ObjectType[Repo, User] = ObjectType("User", () ⇒ fields(
+  val UserType: ObjectType[Repo, User] = ObjectType("User", () => fields(
     Field("name", OptionType(StringType), resolve = _.value.name),
     Field("pets", OptionType(petConnection), arguments = Connection.Args.All,
-      resolve = ctx ⇒ Connection.connectionFromSeq(ctx.value.pets, ConnectionArgs(ctx))),
+      resolve = ctx => Connection.connectionFromSeq(ctx.value.pets, ConnectionArgs(ctx))),
     Field("friends", OptionType(friendConnection), arguments = Connection.Args.All,
-      resolve = ctx ⇒ Connection.connectionFromSeq(ctx.ctx.Users, ConnectionArgs(ctx)))
+      resolve = ctx => Connection.connectionFromSeq(ctx.ctx.Users, ConnectionArgs(ctx)))
   ))
 
   val ConnectionDefinition(_, petConnection) =
@@ -60,14 +60,14 @@ class ConnectionSpec extends WordSpec with Matchers with AwaitSupport {
     name = "Friend",
     nodeType = UserType,
     edgeFields = fields(
-      Field("friendshipTime", OptionType(StringType), resolve = _ ⇒ "Yesterday")),
+      Field("friendshipTime", OptionType(StringType), resolve = _ => "Yesterday")),
     connectionFields = fields(
       Field("totalCount", OptionType(IntType), resolve = _.ctx.Users.size))
   )
 
   val QueryType = ObjectType("Query", fields[Repo, Unit](
     Field("scalars", OptionType(scalarConnection), arguments = Connection.Args.All,
-      resolve = ctx ⇒ Connection.connectionFromSeq(Seq("foo", "bar"), ConnectionArgs(ctx))),
+      resolve = ctx => Connection.connectionFromSeq(Seq("foo", "bar"), ConnectionArgs(ctx))),
     Field("user", OptionType(UserType), resolve = _.ctx.Users.head)))
 
   val schema = Schema(QueryType, additionalTypes = CatType :: DogType :: Nil)
@@ -112,31 +112,31 @@ class ConnectionSpec extends WordSpec with Matchers with AwaitSupport {
 
       Executor.execute(schema, doc, userContext = new Repo).await should be(
         Map(
-          "data" → Map(
-            "scalars" → Map("edges" → List(Map("node" → "bar"))),
-            "user" → Map(
-              "friends" → Map(
-                "totalCount" → 5,
+          "data" -> Map(
+            "scalars" -> Map("edges" -> List(Map("node" -> "bar"))),
+            "user" -> Map(
+              "friends" -> Map(
+                "totalCount" -> 5,
                 "pageInfo" ->
                   Map(
                     "hasNextPage" -> true
                   ),
-                "edges" → List(
+                "edges" -> List(
                   Map(
-                    "friendshipTime" → "Yesterday",
-                    "node" → Map(
-                      "name" → "Dan",
-                      "pets" → Map("edges" → List())
+                    "friendshipTime" -> "Yesterday",
+                    "node" -> Map(
+                      "name" -> "Dan",
+                      "pets" -> Map("edges" -> List())
                     )
                   ),
                   Map(
-                    "friendshipTime" → "Yesterday",
-                    "node" → Map(
-                      "name" → "Nick",
-                      "pets" →  Map(
-                        "edges" → List(
-                          Map("node" → Map("name" → "felix")),
-                          Map("node" → Map("name" → "bob", "tails" → 2))
+                    "friendshipTime" -> "Yesterday",
+                    "node" -> Map(
+                      "name" -> "Nick",
+                      "pets" ->  Map(
+                        "edges" -> List(
+                          Map("node" -> Map("name" -> "felix")),
+                          Map("node" -> Map("name" -> "bob", "tails" -> 2))
                         )
                       )
                     )

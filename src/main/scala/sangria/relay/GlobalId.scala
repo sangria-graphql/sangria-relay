@@ -41,5 +41,5 @@ object GlobalId {
    */
   implicit val GlobalIdTypeAlias: ScalarAlias[GlobalId, String] = ScalarAlias[GlobalId, String](IDType,
     toScalar = _.asString,
-    fromScalar = id ⇒ GlobalId.fromGlobalId(id).fold[Either[Violation, GlobalId]](Left(IdViolation))(Right(_)))
+    fromScalar = id => GlobalId.fromGlobalId(id).fold[Either[Violation, GlobalId]](Left(IdViolation))(Right(_)))
 }

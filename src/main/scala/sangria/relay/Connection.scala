@@ -26,16 +26,16 @@ object Connection {
   }
 
   def isValidNodeType[Val](nodeType: OutputType[Val]): Boolean = nodeType match {
-    case _: ScalarType[_] | _: EnumType[_] | _: CompositeType[_] ⇒ true
-    case OptionType(ofType) ⇒ isValidNodeType(ofType)
-    case _ ⇒ false
+    case _: ScalarType[_] | _: EnumType[_] | _: CompositeType[_] => true
+    case OptionType(ofType) => isValidNodeType(ofType)
+    case _ => false
   }
 
   def definition[Ctx, Conn[_], Val](
     name: String,
     nodeType: OutputType[Val],
-    edgeFields: ⇒ List[Field[Ctx, Edge[Val]]] = Nil,
-    connectionFields: ⇒ List[Field[Ctx, Conn[Val]]] = Nil
+    edgeFields: => List[Field[Ctx, Edge[Val]]] = Nil,
+    connectionFields: => List[Field[Ctx, Conn[Val]]] = Nil
   )(implicit connEv: ConnectionLike[Conn, PageInfo, Val, Edge[Val]], classEv: ClassTag[Conn[Val]]) = {
     definitionWithEdge[Ctx, DefaultPageInfo, Conn, Val, Edge[Val]](name, nodeType, edgeFields, connectionFields)
   }
@@ -43,8 +43,8 @@ object Connection {
   def definitionWithEdge[Ctx, P <: PageInfo, Conn[_], Val, E <: Edge[Val]](
     name: String,
     nodeType: OutputType[Val],
-    edgeFields: ⇒ List[Field[Ctx, E]] = Nil,
-    connectionFields: ⇒ List[Field[Ctx, Conn[Val]]] = Nil,
+    edgeFields: => List[Field[Ctx, E]] = Nil,
+    connectionFields: => List[Field[Ctx, Conn[Val]]] = Nil,
     pageInfoType: OutputType[P] = DefaultPageInfo.pageInfoType
   )(implicit connEv: ConnectionLike[Conn, P, Val, E], classEv: ClassTag[Conn[Val]], classE: ClassTag[E], classP: ClassTag[P]) = {
     if (!isValidNodeType(nodeType))
@@ -52,7 +52,7 @@ object Connection {
           "or a Non‐Null wrapper around one of those types. Notably, this field cannot return a list.")
 
     val edgeType = ObjectType[Ctx, E](name + "Edge", "An edge in a connection.",
-      () ⇒ {
+      () => {
         List[Field[Ctx, E]](
           Field("node", nodeType, Some("The item at the end of the edge."), resolve = _.value.node),
           Field("cursor", StringType, Some("A cursor for use in pagination."), resolve = _.value.cursor)
@@ -60,11 +60,11 @@ object Connection {
       })
 
     val connectionType = ObjectType[Ctx, Conn[Val]](name + "Connection", "A connection to a list of items.",
-      () ⇒ {
+      () => {
         List[Field[Ctx, Conn[Val]]](
-          Field("pageInfo", pageInfoType, Some("Information to aid in pagination."), resolve = ctx ⇒ connEv.pageInfo(ctx.value)),
+          Field("pageInfo", pageInfoType, Some("Information to aid in pagination."), resolve = ctx => connEv.pageInfo(ctx.value)),
           Field("edges", OptionType(ListType(OptionType(edgeType))), Some("A list of edges."),
-            resolve = ctx ⇒ connEv.edges(ctx.value) map (Some(_)))
+            resolve = ctx => connEv.edges(ctx.value) map (Some(_)))
         ) ++ connectionFields
       })
 
@@ -88,8 +88,8 @@ object Connection {
     import args._
     import sliceInfo._
 
-    first.foreach(f ⇒ if (f < 0) throw ConnectionArgumentValidationError("Argument 'first' must be a non-negative integer"))
-    last.foreach(l ⇒ if (l < 0) throw ConnectionArgumentValidationError("Argument 'last' must be a non-negative integer"))
+    first.foreach(f => if (f < 0) throw ConnectionArgumentValidationError("Argument 'first' must be a non-negative integer"))
+    last.foreach(l => if (l < 0) throw ConnectionArgumentValidationError("Argument 'last' must be a non-negative integer"))
 
     val sliceEnd = sliceStart + seqSlice.size
     val beforeOffset = getOffset(before, size)
@@ -98,27 +98,27 @@ object Connection {
     val startOffset = math.max(math.max(sliceStart - 1, afterOffset), -1) + 1
     val endOffset = math.min(math.min(sliceEnd, beforeOffset), size)
 
-    val actualEndOffset = first.fold(endOffset)(f ⇒ math.min(endOffset, startOffset + f))
-    val actualStartOffset = last.fold(startOffset)(l ⇒ math.max(startOffset, actualEndOffset - l))
+    val actualEndOffset = first.fold(endOffset)(f => math.min(endOffset, startOffset + f))
+    val actualStartOffset = last.fold(startOffset)(l => math.max(startOffset, actualEndOffset - l))
 
     // If supplied slice is too large, trim it down before mapping over it.
     val slice = seqSlice.slice(math.max(actualStartOffset - sliceStart, 0), seqSlice.size - (sliceEnd - actualEndOffset))
 
     val edges = slice.zipWithIndex.map {
-      case (value, index) ⇒ Edge(value, offsetToCursor(actualStartOffset + index))
+      case (value, index) => Edge(value, offsetToCursor(actualStartOffset + index))
     }
 
     val firstEdge = edges.headOption
     val lastEdge = edges.lastOption
-    val lowerBound = after.fold(0)(_ ⇒ afterOffset + 1)
-    val upperBound = before.fold(size)(_ ⇒ beforeOffset)
+    val lowerBound = after.fold(0)(_ => afterOffset + 1)
+    val upperBound = before.fold(size)(_ => beforeOffset)
 
     DefaultConnection(
       PageInfo(
         startCursor = firstEdge map (_.cursor),
         endCursor = lastEdge map (_.cursor),
-        hasPreviousPage = last.fold(false)(_ ⇒ actualStartOffset > lowerBound),
-        hasNextPage = first.fold(false)(_ ⇒ actualEndOffset < upperBound)),
+        hasPreviousPage = last.fold(false)(_ => actualStartOffset > lowerBound),
+        hasNextPage = first.fold(false)(_ => actualEndOffset < upperBound)),
       edges
     )
   }
@@ -135,7 +135,7 @@ object Connection {
   def offsetToCursor(offset: Int): String = Base64.encode(CursorPrefix + offset)
 
   def cursorToOffset(cursor: String): Option[Int] =
-    GlobalId.fromGlobalId(cursor).flatMap(id ⇒ Try(id.id.toInt).toOption)
+    GlobalId.fromGlobalId(cursor).flatMap(id => Try(id.id.toInt).toOption)
 }
 
 case class SliceInfo(sliceStart: Int, size: Int)
@@ -171,7 +171,7 @@ case class DefaultPageInfo(
 object DefaultPageInfo {
   def pageInfoType[Ctx, P <: PageInfo : ClassTag]: ObjectType[Ctx, P] =
     ObjectType("PageInfo", "Information about pagination in a connection.",
-      () ⇒ {
+      () => {
         List[Field[Ctx, P]](
           Field("hasNextPage", BooleanType, Some("When paginating forwards, are there more items?"),
             resolve = _.value.hasNextPage),

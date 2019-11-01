@@ -26,12 +26,12 @@ object Node {
   }
 
   def definitionById[Ctx, Val, Res](
-      resolve: (String, Context[Ctx, Val]) ⇒ LeafAction[Ctx, Option[Res]],
-      possibleTypes: ⇒ List[PossibleNodeObject[Ctx, Node]] = Nil,
+      resolve: (String, Context[Ctx, Val]) => LeafAction[Ctx, Option[Res]],
+      possibleTypes: => List[PossibleNodeObject[Ctx, Node]] = Nil,
       tags: List[FieldTag] = Nil,
-      complexity: Option[(Ctx, Args, Double) ⇒ Double] = None) = {
+      complexity: Option[(Ctx, Args, Double) => Double] = None) = {
     val interfaceType = InterfaceType("Node", "An object with an ID", fields[Ctx, Res](
-      Field("id", IDType, Some("The id of the object."), resolve = ctx ⇒
+      Field("id", IDType, Some("The id of the object."), resolve = ctx =>
         possibleTypes.find(_.objectType.isInstanceOf(ctx.value)).map(_.id.asInstanceOf[IdentifiableNode[Ctx, Res]].id(ctx)).getOrElse(throw UnknownPossibleType(ctx.value)))
     ))
 
@@ -39,74 +39,74 @@ object Node {
       tags = tags,
       complexity = complexity,
       arguments = Args.Id :: Nil,
-      possibleTypes = possibleTypes map (pt ⇒ PossibleObject(pt.objectType)),
-      resolve = (ctx: Context[Ctx, Val]) ⇒ resolve(ctx.arg(Args.Id), ctx))
+      possibleTypes = possibleTypes map (pt => PossibleObject(pt.objectType)),
+      resolve = (ctx: Context[Ctx, Val]) => resolve(ctx.arg(Args.Id), ctx))
 
     val nodesField = Field("nodes", ListType(OptionType(interfaceType)), Some("Fetches objects given their IDs"),
       tags = tags,
       complexity = complexity,
       arguments = Args.Ids :: Nil,
-      possibleTypes = possibleTypes map (pt ⇒ PossibleObject(pt.objectType)),
-      resolve = (ctx: Context[Ctx, Val]) ⇒ Action.sequence(ctx.arg(Args.Ids).map(resolve(_, ctx))))
+      possibleTypes = possibleTypes map (pt => PossibleObject(pt.objectType)),
+      resolve = (ctx: Context[Ctx, Val]) => Action.sequence(ctx.arg(Args.Ids).map(resolve(_, ctx))))
 
     NodeDefinition(interfaceType, nodeField, nodesField)
   }
 
   def definition[Ctx, Val, Res](
-      resolve: (GlobalId, Context[Ctx, Val]) ⇒ LeafAction[Ctx, Option[Res]],
-      possibleTypes: ⇒ List[PossibleNodeObject[Ctx, Node]] = Nil,
+      resolve: (GlobalId, Context[Ctx, Val]) => LeafAction[Ctx, Option[Res]],
+      possibleTypes: => List[PossibleNodeObject[Ctx, Node]] = Nil,
       tags: List[FieldTag] = Nil,
-      complexity: Option[(Ctx, Args, Double) ⇒ Double] = None) =
+      complexity: Option[(Ctx, Args, Double) => Double] = None) =
     definitionById(
-      (id: String, ctx: Context[Ctx, Val]) ⇒ resolve(GlobalId.fromGlobalId(id) getOrElse (throw WrongGlobalId(id)), ctx),
+      (id: String, ctx: Context[Ctx, Val]) => resolve(GlobalId.fromGlobalId(id) getOrElse (throw WrongGlobalId(id)), ctx),
       possibleTypes,
       tags,
       complexity)
 
   def globalIdField[Ctx, Val](implicit ev: IdentifiableNode[Ctx, Val]) =
     Field(GlobalIdFieldName, IDType, Some(GlobalIdFieldDescription),
-      resolve = (ctx: Context[Ctx, Val]) ⇒ GlobalId.toGlobalId(ctx.parentType.name, ev.id(ctx)))
+      resolve = (ctx: Context[Ctx, Val]) => GlobalId.toGlobalId(ctx.parentType.name, ev.id(ctx)))
 
   def globalIdField[Ctx, Val](
       typeName: Option[String] = None,
       tags: List[FieldTag] = Nil,
-      complexity: Option[(Ctx, Args, Double) ⇒ Double] = None)(implicit ev: IdentifiableNode[Ctx, Val]) =
+      complexity: Option[(Ctx, Args, Double) => Double] = None)(implicit ev: IdentifiableNode[Ctx, Val]) =
     Field(GlobalIdFieldName, IDType, Some(GlobalIdFieldDescription),
       tags = tags,
       complexity = complexity,
-      resolve = (ctx: Context[Ctx, Val]) ⇒ GlobalId.toGlobalId(typeName.getOrElse(ctx.parentType.name), ev.id(ctx)))
+      resolve = (ctx: Context[Ctx, Val]) => GlobalId.toGlobalId(typeName.getOrElse(ctx.parentType.name), ev.id(ctx)))
 
   def pluralIdentifyingRootField[Ctx, Val, Res, Out, T](
     fieldName: String,
     fieldType: OutputType[Out],
     argName: String,
     argType: InputType[T],
-    resolveSingleInput: (T, Context[Ctx, Val]) ⇒ Option[Out],
+    resolveSingleInput: (T, Context[Ctx, Val]) => Option[Out],
     description: Option[String] = None,
     tags: List[FieldTag] = Nil,
-    complexity: Option[(Ctx, Args, Double) ⇒ Double] = None
+    complexity: Option[(Ctx, Args, Double) => Double] = None
   )(implicit res: ArgumentType[T], ev1: ValidOutType[Res, Out], fromInput: FromInput[T]) =
     Field(fieldName, OptionType(ListType(OptionType(fieldType))), description,
       tags = tags,
       complexity = complexity,
       arguments = Argument(argName, ListInputType(argType)) :: Nil,
-      resolve = (ctx: Context[Ctx, Val]) ⇒ ctx.arg[Vector[T]](argName) map (resolveSingleInput(_, ctx)))
+      resolve = (ctx: Context[Ctx, Val]) => ctx.arg[Vector[T]](argName) map (resolveSingleInput(_, ctx)))
 
   def pluralIdentifyingRootFieldFut[Ctx, Val, Res, Out, T](
     fieldName: String,
     fieldType: OutputType[Out],
     argName: String,
     argType: InputType[T],
-    resolveSingleInput: (T, Context[Ctx, Val]) ⇒ Future[Option[Out]],
+    resolveSingleInput: (T, Context[Ctx, Val]) => Future[Option[Out]],
     description: Option[String] = None,
     tags: List[FieldTag] = Nil,
-    complexity: Option[(Ctx, Args, Double) ⇒ Double] = None
+    complexity: Option[(Ctx, Args, Double) => Double] = None
   )(implicit res: ArgumentType[T], ev1: ValidOutType[Res, Out], execCtx: ExecutionContext, fromInput: FromInput[T]) =
     Field(fieldName, OptionType(ListType(OptionType(fieldType))), description,
       tags = tags,
       complexity = complexity,
       arguments = Argument(argName, ListInputType(argType)) :: Nil,
-      resolve = (ctx: Context[Ctx, Val]) ⇒ Future.sequence(ctx.arg[Seq[T]](argName) map (resolveSingleInput(_, ctx))))
+      resolve = (ctx: Context[Ctx, Val]) => Future.sequence(ctx.arg[Seq[T]](argName) map (resolveSingleInput(_, ctx))))
 
   def possibleNodeTypes[Ctx, Abstract](objectTypes: PossibleNodeObject[Ctx, Abstract]*): List[PossibleNodeObject[Ctx, Abstract]] =
     objectTypes.toList

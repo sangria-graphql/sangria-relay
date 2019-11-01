@@ -25,7 +25,7 @@ class NodePluralSpec extends WordSpec with Matchers with AwaitSupport {
         fieldType = OptionType(UserType),
         argName = "userNames",
         argType = StringType,
-        resolveSingleInput = (userName: String, ctx: Context[Unit, Unit]) ⇒
+        resolveSingleInput = (userName: String, ctx: Context[Unit, Unit]) =>
           Some(User(userName, "www.facebook.com/" + userName))
       )
     ))
@@ -47,19 +47,19 @@ class NodePluralSpec extends WordSpec with Matchers with AwaitSupport {
 
       Executor.execute(schema, doc).await should be  (
         Map(
-          "data" → Map(
-            "userNames" → List(
+          "data" -> Map(
+            "userNames" -> List(
               Map(
-                "userName" → "dschafer",
-                "url" → "www.facebook.com/dschafer"
+                "userName" -> "dschafer",
+                "url" -> "www.facebook.com/dschafer"
               ),
               Map(
-                "userName" → "leebyron",
-                "url" → "www.facebook.com/leebyron"
+                "userName" -> "leebyron",
+                "url" -> "www.facebook.com/leebyron"
               ),
               Map(
-                "userName" → "schrockn",
-                "url" → "www.facebook.com/schrockn"
+                "userName" -> "schrockn",
+                "url" -> "www.facebook.com/schrockn"
               )
             ))))
     }
@@ -104,35 +104,35 @@ class NodePluralSpec extends WordSpec with Matchers with AwaitSupport {
 
       Executor.execute(schema, doc).await should be  (
         Map(
-          "data" → Map(
-            "__schema" → Map(
-              "queryType" → Map(
-                "fields" → List(
+          "data" -> Map(
+            "__schema" -> Map(
+              "queryType" -> Map(
+                "fields" -> List(
                   Map(
-                    "name" → "userNames",
-                    "args" → List(
+                    "name" -> "userNames",
+                    "args" -> List(
                       Map(
-                        "name" → "userNames",
-                        "type" → Map(
-                          "kind" → "NON_NULL",
-                          "ofType" → Map(
-                            "kind" → "LIST",
-                            "ofType" → Map(
-                              "kind" → "NON_NULL",
-                              "ofType" → Map(
-                                "name" → "String",
-                                "kind" → "SCALAR"
+                        "name" -> "userNames",
+                        "type" -> Map(
+                          "kind" -> "NON_NULL",
+                          "ofType" -> Map(
+                            "kind" -> "LIST",
+                            "ofType" -> Map(
+                              "kind" -> "NON_NULL",
+                              "ofType" -> Map(
+                                "name" -> "String",
+                                "kind" -> "SCALAR"
                               )
                             )
                           )
                         )
                       )
                     ),
-                    "type" → Map(
-                      "kind" → "LIST",
-                      "ofType" → Map(
-                        "name" → "User",
-                        "kind" → "OBJECT"
+                    "type" -> Map(
+                      "kind" -> "LIST",
+                      "ofType" -> Map(
+                        "name" -> "User",
+                        "kind" -> "OBJECT"
                       )
                     )
                   )

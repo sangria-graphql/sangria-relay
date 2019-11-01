@@ -52,7 +52,7 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
     )
   }
 
-  val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[Repo, Unit]) ⇒ {
+  val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[Repo, Unit]) => {
     if (id.typeName == "User") ctx.ctx.Users.find(_.id == id.id)
     else if (id.typeName == "CustomPhoto") ctx.ctx.Photos.find(_.photoId == id.id)
     else ctx.ctx.Posts.find(_.postId == id.id.toInt)
@@ -78,7 +78,7 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
       nodeField,
       nodesField,
       Field("allObjects", OptionType(ListType(nodeInterface)),
-        resolve = ctx ⇒ ctx.ctx.Users ++ ctx.ctx.Photos ++ ctx.ctx.Posts)))
+        resolve = ctx => ctx.ctx.Users ++ ctx.ctx.Photos ++ ctx.ctx.Posts)))
 
   val schema = Schema(QueryType)
 
@@ -95,14 +95,14 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
 
       Executor.execute(schema, doc, userContext = new Repo).await should be  (
         Map(
-          "data" → Map(
-            "allObjects" → List(
-              Map("id" → "VXNlcjox"),
-              Map("id" → "VXNlcjoy"),
-              Map("id" → "Q3VzdG9tUGhvdG86MQ=="),
-              Map("id" → "Q3VzdG9tUGhvdG86Mg=="),
-              Map("id" → "UG9zdDox"),
-              Map("id" → "UG9zdDoy")))))
+          "data" -> Map(
+            "allObjects" -> List(
+              Map("id" -> "VXNlcjox"),
+              Map("id" -> "VXNlcjoy"),
+              Map("id" -> "Q3VzdG9tUGhvdG86MQ=="),
+              Map("id" -> "Q3VzdG9tUGhvdG86Mg=="),
+              Map("id" -> "UG9zdDox"),
+              Map("id" -> "UG9zdDoy")))))
     }
 
     "Refetches the IDs" in {
@@ -132,16 +132,16 @@ class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
 
       Executor.execute(schema, doc, userContext = new Repo).await should be  (
         Map(
-          "data" → Map(
-            "user" → Map(
-              "id" → "VXNlcjox",
-              "name" → "John Doe"),
-            "photo" → Map(
-              "id" → "Q3VzdG9tUGhvdG86MQ==",
-              "width" → 300),
-            "post" → Map(
-              "id" → "UG9zdDoy",
-              "text" → "ipsum"))))
+          "data" -> Map(
+            "user" -> Map(
+              "id" -> "VXNlcjox",
+              "name" -> "John Doe"),
+            "photo" -> Map(
+              "id" -> "Q3VzdG9tUGhvdG86MQ==",
+              "width" -> 300),
+            "post" -> Map(
+              "id" -> "UG9zdDoy",
+              "text" -> "ipsum"))))
     }
   }
 

@@ -85,7 +85,7 @@ object StarWarsSchema {
    * The first method is the way we resolve an ID to its object. The second is the
    * way we resolve an object that implements node to its type.
    */
-  val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[ShipRepo, Unit]) ⇒ {
+  val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[ShipRepo, Unit]) => {
     if (id.typeName == "Faction") ctx.ctx.getFaction(id.id)
     else if (id.typeName == "Ship") ctx.ctx.getShip(id.id)
     else None
@@ -93,7 +93,7 @@ object StarWarsSchema {
 
   def idFields[T : Identifiable] = fields[Unit, T](
     Node.globalIdField,
-    Field("rawId", StringType, resolve = ctx ⇒ implicitly[Identifiable[T]].id(ctx.value))
+    Field("rawId", StringType, resolve = ctx => implicitly[Identifiable[T]].id(ctx.value))
   )
 
   /**
@@ -149,7 +149,7 @@ object StarWarsSchema {
       Node.globalIdField[ShipRepo, Faction],
       Field("name", OptionType(StringType), Some("The name of the faction."), resolve = _.value.name),
       Field("ships", OptionType(shipConnection), arguments = Connection.Args.All,
-        resolve = ctx ⇒ Connection.connectionFromSeq(ctx.value.ships map ctx.ctx.getShip, ConnectionArgs(ctx)))))
+        resolve = ctx => Connection.connectionFromSeq(ctx.value.ships map ctx.ctx.getShip, ConnectionArgs(ctx)))))
 
   /**
    * This is the type that will be the root of our query, and the
@@ -194,9 +194,9 @@ object StarWarsSchema {
       InputField("shipName", StringType),
       InputField("factionId", GlobalIdTypeAlias)),
     outputFields = fields(
-      Field("ship", OptionType(ShipType), resolve = ctx ⇒ ctx.ctx.getShip(ctx.value.shipId)),
-      Field("faction", OptionType(FactionType), resolve = ctx ⇒ ctx.ctx.getFaction(ctx.value.factionId))),
-    mutateAndGetPayload = (input, ctx) ⇒ {
+      Field("ship", OptionType(ShipType), resolve = ctx => ctx.ctx.getShip(ctx.value.shipId)),
+      Field("faction", OptionType(FactionType), resolve = ctx => ctx.ctx.getFaction(ctx.value.factionId))),
+    mutateAndGetPayload = (input, ctx) => {
       val mutationId = input(Mutation.ClientMutationIdFieldName).asInstanceOf[Option[String]]
       val shipName = input("shipName").asInstanceOf[String]
       val factionId = input("factionId").asInstanceOf[GlobalId]
