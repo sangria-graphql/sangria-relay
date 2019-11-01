@@ -39,14 +39,14 @@ object Node {
       tags = tags,
       complexity = complexity,
       arguments = Args.Id :: Nil,
-      possibleTypes = possibleTypes map (pt => PossibleObject(pt.objectType)),
+      possibleTypes = possibleTypes map (pt => PossibleObject[Ctx, Node](pt.objectType)),
       resolve = (ctx: Context[Ctx, Val]) => resolve(ctx.arg(Args.Id), ctx))
 
     val nodesField = Field("nodes", ListType(OptionType(interfaceType)), Some("Fetches objects given their IDs"),
       tags = tags,
       complexity = complexity,
       arguments = Args.Ids :: Nil,
-      possibleTypes = possibleTypes map (pt => PossibleObject(pt.objectType)),
+      possibleTypes = possibleTypes map (pt => PossibleObject[Ctx, Node](pt.objectType)),
       resolve = (ctx: Context[Ctx, Val]) => Action.sequence(ctx.arg(Args.Ids).map(resolve(_, ctx))))
 
     NodeDefinition(interfaceType, nodeField, nodesField)
