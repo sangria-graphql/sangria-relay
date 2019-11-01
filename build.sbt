@@ -19,8 +19,8 @@ scalacOptions ++= {
 }
 
 libraryDependencies ++= Seq(
-  "org.sangria-graphql" %% "sangria" % "1.4.2",
-  "org.scalatest" %% "scalatest" % "3.0.5" % "test")
+  "org.sangria-graphql" %% "sangria" % "2.0.0-M1",
+  "org.scalatest" %% "scalatest" % "3.0.8" % Test)
 
 // Publishing
 
