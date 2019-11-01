@@ -1,6 +1,5 @@
 name := "sangria-relay"
 organization := "org.sangria-graphql"
-version := "2.0.0-SNAPSHOT"
 mimaPreviousArtifacts := Set("org.sangria-graphql" %% "sangria-relay" % "1.4.2")
 
 description := "Sangria Relay Support"
@@ -24,7 +23,8 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.8" % Test)
 
 // Publishing
-
+releaseCrossBuild := true
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
 publishMavenStyle := true
 publishArtifact in Test := false
 pomIncludeRepository := (_ => false)
