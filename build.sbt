@@ -20,7 +20,7 @@ scalacOptions ++= {
 
 libraryDependencies ++= Seq(
   "org.sangria-graphql" %% "sangria" % "2.0.0-M1",
-  "org.scalatest" %% "scalatest" % "3.0.8" % Test)
+  "org.scalatest" %% "scalatest" % "3.1.0" % Test)
 
 // Publishing
 releaseCrossBuild := true

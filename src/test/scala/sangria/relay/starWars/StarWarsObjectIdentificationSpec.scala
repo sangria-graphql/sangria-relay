@@ -1,6 +1,5 @@
 package sangria.relay.starWars
 
-import org.scalatest.{Matchers, WordSpec}
 import sangria.execution.Executor
 import sangria.parser.QueryParser
 import sangria.relay.starWars.StarWarsData.ShipRepo
@@ -8,8 +7,10 @@ import sangria.relay.util.AwaitSupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Success
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class StarWarsObjectIdentificationSpec extends WordSpec with Matchers with AwaitSupport {
+class StarWarsObjectIdentificationSpec extends AnyWordSpec with Matchers with AwaitSupport {
   "Object Identification" when {
     "Fetching" should {
       "Correctly fetches the ID and name of the rebels" in {

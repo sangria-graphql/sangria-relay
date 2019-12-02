@@ -1,6 +1,5 @@
 package sangria.relay
 
-import org.scalatest.{Matchers, WordSpec}
 import sangria.execution.Executor
 import sangria.parser.QueryParser
 import sangria.relay.util.AwaitSupport
@@ -9,8 +8,10 @@ import sangria.schema._
 import scala.util.Success
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ConnectionSpec extends WordSpec with Matchers with AwaitSupport {
+class ConnectionSpec extends AnyWordSpec with Matchers with AwaitSupport {
   trait Pet {
     def name: String
   }

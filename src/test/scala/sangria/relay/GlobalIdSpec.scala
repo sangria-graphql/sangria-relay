@@ -1,6 +1,5 @@
 package sangria.relay
 
-import org.scalatest.{Matchers, WordSpec}
 import sangria.execution.Executor
 import sangria.parser.QueryParser
 import sangria.relay.util.AwaitSupport
@@ -9,8 +8,10 @@ import sangria.schema._
 import scala.util.Success
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class GlobalIdSpec extends WordSpec with Matchers with AwaitSupport {
+class GlobalIdSpec extends AnyWordSpec with Matchers with AwaitSupport {
   case class User(id: String, name: String) extends Node
   case class Photo(photoId: String, width: Int)
   case class Post(postId: Int, text: String)
