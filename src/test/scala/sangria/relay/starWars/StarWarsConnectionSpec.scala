@@ -1,6 +1,5 @@
 package sangria.relay.starWars
 
-import org.scalatest.{Matchers, WordSpec}
 import sangria.execution.Executor
 import sangria.parser.QueryParser
 import sangria.relay.starWars.StarWarsData.ShipRepo
@@ -8,8 +7,10 @@ import sangria.relay.util.{AwaitSupport, DebugUtil}
 
 import scala.util.Success
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class StarWarsConnectionSpec extends WordSpec with Matchers with AwaitSupport {
+class StarWarsConnectionSpec extends AnyWordSpec with Matchers with AwaitSupport {
   "Connection" when {
     "Fetching" should {
       "Correctly fetches the first ship of the rebels" in {

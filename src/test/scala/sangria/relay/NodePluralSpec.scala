@@ -1,6 +1,5 @@
 package sangria.relay
 
-import org.scalatest.{Matchers, WordSpec}
 import sangria.execution.Executor
 import sangria.parser.QueryParser
 import sangria.relay.util.AwaitSupport
@@ -8,8 +7,10 @@ import sangria.schema._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Success
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class NodePluralSpec extends WordSpec with Matchers with AwaitSupport {
+class NodePluralSpec extends AnyWordSpec with Matchers with AwaitSupport {
   case class User(userName: String, url: String)
 
   val UserType = ObjectType("User",

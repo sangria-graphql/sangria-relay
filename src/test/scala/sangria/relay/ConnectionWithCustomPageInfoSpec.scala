@@ -1,6 +1,5 @@
 package sangria.relay
 
-import org.scalatest.{ Matchers, WordSpec }
 import sangria.execution.Executor
 import sangria.parser.QueryParser
 import sangria.relay.util.AwaitSupport
@@ -8,8 +7,10 @@ import sangria.schema._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Success
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ConnectionWithCustomPageInfoSpec extends WordSpec with Matchers with AwaitSupport {
+class ConnectionWithCustomPageInfoSpec extends AnyWordSpec with Matchers with AwaitSupport {
 
   /**
    * custom PageInfo to be included in Connection

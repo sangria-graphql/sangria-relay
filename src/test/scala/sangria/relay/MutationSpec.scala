@@ -1,6 +1,5 @@
 package sangria.relay
 
-import org.scalatest.{Matchers, WordSpec}
 import sangria.execution.{ErrorWithResolver, Executor}
 import sangria.marshalling.{CoercedScalaResultMarshaller, ResultMarshaller, FromInput}
 import sangria.parser.QueryParser
@@ -11,8 +10,10 @@ import scala.concurrent.Future
 import scala.util.Success
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultHelper {
+class MutationSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHelper {
   case class Counter(id: String, num: Int)
 
   object Counter {
