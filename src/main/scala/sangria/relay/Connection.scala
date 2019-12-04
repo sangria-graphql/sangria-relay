@@ -226,4 +226,4 @@ object ConnectionArgs {
   val empty = ConnectionArgs()
 }
 
-case class ConnectionArgumentValidationError(message: String) extends Exception with UserFacingError
+case class ConnectionArgumentValidationError(message: String) extends Exception(message) with UserFacingError
