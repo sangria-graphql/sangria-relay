@@ -41,8 +41,8 @@ startYear := Some(2015)
 organizationHomepage := Some(url("https://github.com/sangria-graphql"))
 developers := Developer("OlegIlyenko", "Oleg Ilyenko", "", url("https://github.com/OlegIlyenko")) :: Nil
 scmInfo := Some(ScmInfo(
-  browseUrl = url("https://github.com/sangria-graphql-org/sangria-relay.git"),
-  connection = "scm:git:git@github.com:sangria-graphql-org/sangria-relay.git"
+  browseUrl = url("https://github.com/sangria-graphql/sangria-relay.git"),
+  connection = "scm:git:git@github.com:sangria-graphql/sangria-relay.git"
 ))
 
 // nice *magenta* prompt!
