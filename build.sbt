@@ -20,7 +20,7 @@ scalacOptions ++= {
 
 libraryDependencies ++= Seq(
   "org.sangria-graphql" %% "sangria" % "2.0.1",
-  "org.scalatest" %% "scalatest" % "3.1.1" % Test)
+  "org.scalatest" %% "scalatest" % "3.1.4" % Test)
 
 // Publishing
 releaseCrossBuild := true
@@ -41,8 +41,8 @@ startYear := Some(2015)
 organizationHomepage := Some(url("https://github.com/sangria-graphql"))
 developers := Developer("OlegIlyenko", "Oleg Ilyenko", "", url("https://github.com/OlegIlyenko")) :: Nil
 scmInfo := Some(ScmInfo(
-  browseUrl = url("https://github.com/sangria-graphql-org/sangria-relay.git"),
-  connection = "scm:git:git@github.com:sangria-graphql-org/sangria-relay.git"
+  browseUrl = url("https://github.com/sangria-graphql/sangria-relay.git"),
+  connection = "scm:git:git@github.com:sangria-graphql/sangria-relay.git"
 ))
 
 // nice *magenta* prompt!
