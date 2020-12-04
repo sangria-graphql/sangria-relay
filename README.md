@@ -2,7 +2,7 @@
 
 **sangria-relay** is a library to help construct a sangria server supporting react-relay. [Sangria](https://sangria-graphql.github.io/) is a scala [GraphQL](http://facebook.github.io/graphql/) library.
 
-[![Build Status](https://travis-ci.org/sangria-graphql/sangria-relay.svg?branch=master)](https://travis-ci.org/sangria-graphql/sangria-relay)
+[![Build Status](https://travis-ci.com/sangria-graphql/sangria-relay.svg?branch=master)](https://travis-ci.com/sangria-graphql/sangria-relay)
 [![Coverage Status](http://coveralls.io/repos/sangria-graphql/sangria-relay/badge.svg?branch=master&service=github)](http://coveralls.io/github/sangria-graphql/sangria-relay?branch=master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-relay_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-relay_2.11)
 [![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
