@@ -6,21 +6,17 @@ description := "Sangria Relay Support"
 homepage := Some(url("http://sangria-graphql.org"))
 licenses := Seq("Apache License, ASL Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
 
-scalaVersion := "2.13.0"
-crossScalaVersions := Seq("2.11.12", "2.12.10", scalaVersion.value)
+scalaVersion := "2.13.4"
+crossScalaVersions := Seq("2.12.10", scalaVersion.value)
 
 scalacOptions ++= Seq("-deprecation", "-feature")
 
-scalacOptions ++= {
-  if (scalaVersion.value startsWith "2.11")
-    Seq("-target:jvm-1.7")
-  else
-    Seq.empty
-}
+scalacOptions += "-target:jvm-1.8"
+javacOptions ++= Seq("-source", "8", "-target", "8")
 
 libraryDependencies ++= Seq(
-  "org.sangria-graphql" %% "sangria" % "2.0.0-RC1",
-  "org.scalatest" %% "scalatest" % "3.1.1" % Test)
+  "org.sangria-graphql" %% "sangria" % "2.0.1",
+  "org.scalatest" %% "scalatest" % "3.1.4" % Test)
 
 // Publishing
 releaseCrossBuild := true
@@ -41,8 +37,8 @@ startYear := Some(2015)
 organizationHomepage := Some(url("https://github.com/sangria-graphql"))
 developers := Developer("OlegIlyenko", "Oleg Ilyenko", "", url("https://github.com/OlegIlyenko")) :: Nil
 scmInfo := Some(ScmInfo(
-  browseUrl = url("https://github.com/sangria-graphql-org/sangria-relay.git"),
-  connection = "scm:git:git@github.com:sangria-graphql-org/sangria-relay.git"
+  browseUrl = url("https://github.com/sangria-graphql/sangria-relay.git"),
+  connection = "scm:git:git@github.com:sangria-graphql/sangria-relay.git"
 ))
 
 // nice *magenta* prompt!
