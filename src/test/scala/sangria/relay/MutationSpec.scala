@@ -1,6 +1,5 @@
 package sangria.relay
 
-import org.scalatest.{Matchers, WordSpec}
 import sangria.execution.{ErrorWithResolver, Executor}
 import sangria.marshalling.{CoercedScalaResultMarshaller, ResultMarshaller, FromInput}
 import sangria.parser.QueryParser
@@ -11,8 +10,10 @@ import scala.concurrent.Future
 import scala.util.Success
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultHelper {
+class MutationSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHelper {
   case class Counter(id: String, num: Int)
 
   object Counter {
@@ -41,7 +42,7 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
     typeName = "SimpleMutation",
     inputFields = List(InputField("num", OptionInputType(IntType))),
     outputFields = fields(Field("num", OptionType(IntType), resolve = _.value.num)),
-    mutateAndGetPayload = (counter, ctx) ⇒ ctx.ctx.mutateCounter(counter)
+    mutateAndGetPayload = (counter, ctx) => ctx.ctx.mutateCounter(counter)
   )
 
   val simpleFutureMutation = Mutation.fieldWithClientMutationId[Repo, Unit, Counter, Counter](
@@ -49,7 +50,7 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
     typeName = "SimpleFutureMutation",
     inputFields = List(InputField("num", OptionInputType(IntType))),
     outputFields = fields(Field("num", OptionType(IntType), resolve = _.value.num)),
-    mutateAndGetPayload = (counter, ctx) ⇒ Future.successful(ctx.ctx.mutateCounter(counter))
+    mutateAndGetPayload = (counter, ctx) => Future.successful(ctx.ctx.mutateCounter(counter))
   )
 
   val mutation = ObjectType("Mutation",
@@ -70,7 +71,7 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
           """)
 
         val result = Executor.execute(schema, doc, userContext = new Repo).recover {
-          case e: ErrorWithResolver ⇒ e.resolveError
+          case e: ErrorWithResolver => e.resolveError
         }.await
 
         result.getProp("data").asAnyRef should equal (null)
@@ -95,10 +96,10 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" → Map(
-              "simpleMutation" → Map(
-                "num" → 2,
-                "clientMutationId" → "abc"))))
+            "data" -> Map(
+              "simpleMutation" -> Map(
+                "num" -> 2,
+                "clientMutationId" -> "abc"))))
       }
 
       "Accepts num argument" in {
@@ -114,10 +115,10 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" → Map(
-              "simpleMutation" → Map(
-                "num" → 47,
-                "clientMutationId" → "abc"))))
+            "data" -> Map(
+              "simpleMutation" -> Map(
+                "num" -> 47,
+                "clientMutationId" -> "abc"))))
       }
 
       "Supports promise mutations" in {
@@ -133,10 +134,10 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" → Map(
-              "simpleFutureMutation" → Map(
-                "num" → 2,
-                "clientMutationId" → "abc"))))
+            "data" -> Map(
+              "simpleFutureMutation" -> Map(
+                "num" -> 2,
+                "clientMutationId" -> "abc"))))
       }
     }
 
@@ -165,25 +166,25 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" → Map(
-              "__type" → Map(
-                "name" → "SimpleMutationInput",
-                "kind" → "INPUT_OBJECT",
-                "inputFields" → List(
+            "data" -> Map(
+              "__type" -> Map(
+                "name" -> "SimpleMutationInput",
+                "kind" -> "INPUT_OBJECT",
+                "inputFields" -> List(
                   Map(
-                    "name" → "num",
-                    "type" → Map(
-                      "name" → "Int",
-                      "kind" → "SCALAR",
-                      "ofType" → null
+                    "name" -> "num",
+                    "type" -> Map(
+                      "name" -> "Int",
+                      "kind" -> "SCALAR",
+                      "ofType" -> null
                     )
                   ),
                   Map(
-                    "name" → "clientMutationId",
-                    "type" → Map(
-                      "name" → "String",
-                      "kind" → "SCALAR",
-                      "ofType" → null
+                    "name" -> "clientMutationId",
+                    "type" -> Map(
+                      "name" -> "String",
+                      "kind" -> "SCALAR",
+                      "ofType" -> null
                     )
                   )
                 )
@@ -214,25 +215,25 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" → Map(
-              "__type" → Map(
-                "name" → "SimpleMutationPayload",
-                "kind" → "OBJECT",
-                "fields" → List(
+            "data" -> Map(
+              "__type" -> Map(
+                "name" -> "SimpleMutationPayload",
+                "kind" -> "OBJECT",
+                "fields" -> List(
                   Map(
-                    "name" → "num",
-                    "type" → Map(
-                      "name" → "Int",
-                      "kind" → "SCALAR",
-                      "ofType" → null
+                    "name" -> "num",
+                    "type" -> Map(
+                      "name" -> "Int",
+                      "kind" -> "SCALAR",
+                      "ofType" -> null
                     )
                   ),
                   Map(
-                    "name" → "clientMutationId",
-                    "type" → Map(
-                      "name" → "String",
-                      "kind" → "SCALAR",
-                      "ofType" → null
+                    "name" -> "clientMutationId",
+                    "type" -> Map(
+                      "name" -> "String",
+                      "kind" -> "SCALAR",
+                      "ofType" -> null
                     )
                   )
                 )
@@ -270,48 +271,48 @@ class MutationSpec extends WordSpec with Matchers with AwaitSupport with ResultH
 
         Executor.execute(schema, doc, userContext = new Repo).await should be  (
           Map(
-            "data" → Map(
-              "__schema" → Map(
-                "mutationType" → Map(
-                  "fields" → List(
+            "data" -> Map(
+              "__schema" -> Map(
+                "mutationType" -> Map(
+                  "fields" -> List(
                     Map(
-                      "name" → "simpleMutation",
-                      "args" → List(
+                      "name" -> "simpleMutation",
+                      "args" -> List(
                         Map(
-                          "name" → "input",
-                          "type" → Map(
-                            "name" → null,
-                            "kind" → "NON_NULL",
-                            "ofType" → Map(
-                              "name" → "SimpleMutationInput",
-                              "kind" → "INPUT_OBJECT"
+                          "name" -> "input",
+                          "type" -> Map(
+                            "name" -> null,
+                            "kind" -> "NON_NULL",
+                            "ofType" -> Map(
+                              "name" -> "SimpleMutationInput",
+                              "kind" -> "INPUT_OBJECT"
                             )
                           )
                         )
                       ),
-                      "type" → Map(
-                        "name" → "SimpleMutationPayload",
-                        "kind" → "OBJECT"
+                      "type" -> Map(
+                        "name" -> "SimpleMutationPayload",
+                        "kind" -> "OBJECT"
                       )
                     ),
                     Map(
-                      "name" → "simpleFutureMutation",
-                      "args" → List(
+                      "name" -> "simpleFutureMutation",
+                      "args" -> List(
                         Map(
-                          "name" → "input",
-                          "type" → Map(
-                            "name" → null,
-                            "kind" → "NON_NULL",
-                            "ofType" → Map(
-                              "name" → "SimpleFutureMutationInput",
-                              "kind" → "INPUT_OBJECT"
+                          "name" -> "input",
+                          "type" -> Map(
+                            "name" -> null,
+                            "kind" -> "NON_NULL",
+                            "ofType" -> Map(
+                              "name" -> "SimpleFutureMutationInput",
+                              "kind" -> "INPUT_OBJECT"
                             )
                           )
                         )
                       ),
-                      "type" → Map(
-                        "name" → "SimpleFutureMutationPayload",
-                        "kind" → "OBJECT"
+                      "type" -> Map(
+                        "name" -> "SimpleFutureMutationPayload",
+                        "kind" -> "OBJECT"
                       )
                     )
                   )

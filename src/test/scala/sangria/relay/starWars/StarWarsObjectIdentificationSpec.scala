@@ -1,6 +1,5 @@
 package sangria.relay.starWars
 
-import org.scalatest.{Matchers, WordSpec}
 import sangria.execution.Executor
 import sangria.parser.QueryParser
 import sangria.relay.starWars.StarWarsData.ShipRepo
@@ -8,8 +7,10 @@ import sangria.relay.util.AwaitSupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Success
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class StarWarsObjectIdentificationSpec extends WordSpec with Matchers with AwaitSupport {
+class StarWarsObjectIdentificationSpec extends AnyWordSpec with Matchers with AwaitSupport {
   "Object Identification" when {
     "Fetching" should {
       "Correctly fetches the ID and name of the rebels" in {
@@ -25,10 +26,10 @@ class StarWarsObjectIdentificationSpec extends WordSpec with Matchers with Await
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
           Map(
-            "data" → Map(
-              "rebels" → Map(
-                "id" → "RmFjdGlvbjox",
-                "name" → "Alliance to Restore the Republic"))))
+            "data" -> Map(
+              "rebels" -> Map(
+                "id" -> "RmFjdGlvbjox",
+                "name" -> "Alliance to Restore the Republic"))))
       }
 
       "Correctly refetches the rebels" in {
@@ -46,10 +47,10 @@ class StarWarsObjectIdentificationSpec extends WordSpec with Matchers with Await
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
           Map(
-            "data" → Map(
-              "node" → Map(
-                "id" → "RmFjdGlvbjox",
-                "name" → "Alliance to Restore the Republic"))))
+            "data" -> Map(
+              "node" -> Map(
+                "id" -> "RmFjdGlvbjox",
+                "name" -> "Alliance to Restore the Republic"))))
       }
 
       "Correctly fetches the ID and name of the empire" in {
@@ -65,10 +66,10 @@ class StarWarsObjectIdentificationSpec extends WordSpec with Matchers with Await
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
           Map(
-            "data" → Map(
-              "empire" → Map(
-                "id" → "RmFjdGlvbjoy",
-                "name" → "Galactic Empire"))))
+            "data" -> Map(
+              "empire" -> Map(
+                "id" -> "RmFjdGlvbjoy",
+                "name" -> "Galactic Empire"))))
       }
 
       "Correctly refetches the empire" in {
@@ -86,10 +87,10 @@ class StarWarsObjectIdentificationSpec extends WordSpec with Matchers with Await
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
           Map(
-            "data" → Map(
-              "node" → Map(
-                "id" → "RmFjdGlvbjoy",
-                "name" → "Galactic Empire"))))
+            "data" -> Map(
+              "node" -> Map(
+                "id" -> "RmFjdGlvbjoy",
+                "name" -> "Galactic Empire"))))
       }
 
       "Correctly refetches the X-Wing" in {
@@ -107,10 +108,10 @@ class StarWarsObjectIdentificationSpec extends WordSpec with Matchers with Await
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
           Map(
-            "data" → Map(
-              "node" → Map(
-                "id" → "U2hpcDox",
-                "name" → "X-Wing"))))
+            "data" -> Map(
+              "node" -> Map(
+                "id" -> "U2hpcDox",
+                "name" -> "X-Wing"))))
       }
     }
   }

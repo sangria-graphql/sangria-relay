@@ -1,11 +1,12 @@
 package sangria.relay
 
-import org.scalatest.{Matchers, WordSpec}
 import sangria.relay.util.AwaitSupport
 
 import scala.concurrent.Future
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ConnectionFromSeqSpec extends WordSpec with Matchers with AwaitSupport {
+class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport {
   val Letters = List("A", "B", "C", "D", "E")
   val FutureLetters = Future.successful(Letters)
 

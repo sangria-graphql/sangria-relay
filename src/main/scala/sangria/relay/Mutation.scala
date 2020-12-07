@@ -17,11 +17,11 @@ object Mutation {
   def fieldWithClientMutationId[Ctx, Val, Res : MutationLike : ClassTag, Input: FromInput](
         fieldName: String,
         typeName: String,
-        mutateAndGetPayload: (Input, Context[Ctx, Val]) ⇒ Action[Ctx, Res],
+        mutateAndGetPayload: (Input, Context[Ctx, Val]) => Action[Ctx, Res],
         inputFields: List[InputField[_]] = Nil,
         outputFields: List[Field[Ctx, Res]] = Nil,
         tags: List[FieldTag] = Nil,
-        complexity: Option[(Ctx, Args, Double) ⇒ Double] = None,
+        complexity: Option[(Ctx, Args, Double) => Double] = None,
         fieldDescription: Option[String] = None) = {
     val inputType = InputObjectType[Input](typeName + "Input",
       fields = inputFields :+ InputField(ClientMutationIdFieldName, OptionInputType(StringType)))
@@ -29,7 +29,7 @@ object Mutation {
     val outputType = ObjectType(typeName + "Payload",
       outputFields :+
         Field(ClientMutationIdFieldName, OptionType(StringType),
-          resolve = (ctx: Context[Ctx, Res]) ⇒ implicitly[MutationLike[Res]].clientMutationId(ctx.value)))
+          resolve = (ctx: Context[Ctx, Res]) => implicitly[MutationLike[Res]].clientMutationId(ctx.value)))
 
     val inputArg = Argument("input", inputType)
 
@@ -38,7 +38,7 @@ object Mutation {
       tags = tags,
       complexity = complexity,
       arguments = inputArg :: Nil,
-      resolve = (ctx: Context[Ctx, Val]) ⇒ mutateAndGetPayload(ctx.arg(inputArg), ctx))
+      resolve = (ctx: Context[Ctx, Val]) => mutateAndGetPayload(ctx.arg(inputArg), ctx))
   }
 }
 
