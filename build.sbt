@@ -15,7 +15,7 @@ scalacOptions += "-target:jvm-1.8"
 javacOptions ++= Seq("-source", "8", "-target", "8")
 
 libraryDependencies ++= Seq(
-  "org.sangria-graphql" %% "sangria" % "2.0.0",
+  "org.sangria-graphql" %% "sangria" % "2.0.1",
   "org.scalatest" %% "scalatest" % "3.1.4" % Test)
 
 // Publishing
