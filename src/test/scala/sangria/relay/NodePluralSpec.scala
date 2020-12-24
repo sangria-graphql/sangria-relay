@@ -13,12 +13,14 @@ import org.scalatest.wordspec.AnyWordSpec
 class NodePluralSpec extends AnyWordSpec with Matchers with AwaitSupport {
   case class User(userName: String, url: String)
 
-  val UserType = ObjectType("User",
+  val UserType = ObjectType(
+    "User",
     fields[Unit, User](
       Field("userName", OptionType(StringType), resolve = _.value.userName),
       Field("url", OptionType(StringType), resolve = _.value.url)))
 
-  val QueryType: ObjectType[Unit, Unit] = ObjectType("Query",
+  val QueryType: ObjectType[Unit, Unit] = ObjectType(
+    "Query",
     fields[Unit, Unit](
       Node.pluralIdentifyingRootField(
         fieldName = "userNames",
@@ -29,14 +31,14 @@ class NodePluralSpec extends AnyWordSpec with Matchers with AwaitSupport {
         resolveSingleInput = (userName: String, ctx: Context[Unit, Unit]) =>
           Some(User(userName, "www.facebook.com/" + userName))
       )
-    ))
+    )
+  )
 
   val schema = Schema(QueryType)
 
   "pluralIdentifyingRootField" should {
     "Allows fetching" in {
-      val Success(doc) = QueryParser.parse(
-        """
+      val Success(doc) = QueryParser.parse("""
           {
             userNames(userNames: ["dschafer", "leebyron", "schrockn"]) {
               userName
@@ -45,29 +47,25 @@ class NodePluralSpec extends AnyWordSpec with Matchers with AwaitSupport {
           }
         """)
 
-
-      Executor.execute(schema, doc).await should be  (
-        Map(
-          "data" -> Map(
-            "userNames" -> List(
-              Map(
-                "userName" -> "dschafer",
-                "url" -> "www.facebook.com/dschafer"
-              ),
-              Map(
-                "userName" -> "leebyron",
-                "url" -> "www.facebook.com/leebyron"
-              ),
-              Map(
-                "userName" -> "schrockn",
-                "url" -> "www.facebook.com/schrockn"
-              )
-            ))))
+      Executor.execute(schema, doc).await should be(
+        Map("data" -> Map("userNames" -> List(
+          Map(
+            "userName" -> "dschafer",
+            "url" -> "www.facebook.com/dschafer"
+          ),
+          Map(
+            "userName" -> "leebyron",
+            "url" -> "www.facebook.com/leebyron"
+          ),
+          Map(
+            "userName" -> "schrockn",
+            "url" -> "www.facebook.com/schrockn"
+          )
+        ))))
     }
 
     "Correctly introspects" in {
-      val Success(doc) = QueryParser.parse(
-        """
+      val Success(doc) = QueryParser.parse("""
           {
             __schema {
               queryType {
@@ -102,8 +100,7 @@ class NodePluralSpec extends AnyWordSpec with Matchers with AwaitSupport {
           }
         """)
 
-
-      Executor.execute(schema, doc).await should be  (
+      Executor.execute(schema, doc).await should be(
         Map(
           "data" -> Map(
             "__schema" -> Map(

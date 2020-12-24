@@ -1,9 +1,9 @@
 package sangria.relay
 
 import sangria.execution.{ErrorWithResolver, Executor}
-import sangria.marshalling.{CoercedScalaResultMarshaller, ResultMarshaller, FromInput}
+import sangria.marshalling.{CoercedScalaResultMarshaller, FromInput, ResultMarshaller}
 import sangria.parser.QueryParser
-import sangria.relay.util.{ResultHelper, AwaitSupport}
+import sangria.relay.util.{AwaitSupport, ResultHelper}
 import sangria.schema._
 
 import scala.concurrent.Future
@@ -28,7 +28,7 @@ class MutationSpec extends AnyWordSpec with Matchers with AwaitSupport with Resu
 
         Counter(
           id = input(Mutation.ClientMutationIdFieldName).asInstanceOf[Option[String]].get,
-          num = input get "num" flatMap (_.asInstanceOf[Option[Int]]) getOrElse 1)
+          num = input.get("num").flatMap(_.asInstanceOf[Option[Int]]).getOrElse(1))
       }
     }
   }
@@ -53,16 +53,14 @@ class MutationSpec extends AnyWordSpec with Matchers with AwaitSupport with Resu
     mutateAndGetPayload = (counter, ctx) => Future.successful(ctx.ctx.mutateCounter(counter))
   )
 
-  val mutation = ObjectType("Mutation",
-    fields[Repo, Unit](simpleMutation, simpleFutureMutation))
+  val mutation = ObjectType("Mutation", fields[Repo, Unit](simpleMutation, simpleFutureMutation))
 
   val schema = Schema(mutation, Some(mutation))
 
   "fieldWithClientMutationId" when {
     "Behaves correctly" should {
       "Requires an argument" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             mutation M {
               simpleMutation {
                 num
@@ -70,22 +68,25 @@ class MutationSpec extends AnyWordSpec with Matchers with AwaitSupport with Resu
             }
           """)
 
-        val result = Executor.execute(schema, doc, userContext = new Repo).recover {
-          case e: ErrorWithResolver => e.resolveError
-        }.await
+        val result = Executor
+          .execute(schema, doc, userContext = new Repo)
+          .recover { case e: ErrorWithResolver =>
+            e.resolveError
+          }
+          .await
 
-        result.getProp("data").asAnyRef should equal (null)
+        result.getProp("data").asAnyRef should equal(null)
 
         val errors = result.getProp("errors").asList
 
         errors should have size 1
 
-        errors(0).getProp("message").asString should include ("Field 'simpleMutation' argument 'input' of type 'SimpleMutationInput!' is required but not provided.")
+        errors(0).getProp("message").asString should include(
+          "Field 'simpleMutation' argument 'input' of type 'SimpleMutationInput!' is required but not provided.")
       }
 
       "Returns the same client mutation ID" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             mutation M {
               simpleMutation(input: {clientMutationId: "abc"}) {
                 num
@@ -94,17 +95,12 @@ class MutationSpec extends AnyWordSpec with Matchers with AwaitSupport with Resu
             }
           """)
 
-        Executor.execute(schema, doc, userContext = new Repo).await should be  (
-          Map(
-            "data" -> Map(
-              "simpleMutation" -> Map(
-                "num" -> 2,
-                "clientMutationId" -> "abc"))))
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map("simpleMutation" -> Map("num" -> 2, "clientMutationId" -> "abc"))))
       }
 
       "Accepts num argument" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             mutation M {
               simpleMutation(input: {clientMutationId: "abc", num: 46}) {
                 num
@@ -113,17 +109,12 @@ class MutationSpec extends AnyWordSpec with Matchers with AwaitSupport with Resu
             }
           """)
 
-        Executor.execute(schema, doc, userContext = new Repo).await should be  (
-          Map(
-            "data" -> Map(
-              "simpleMutation" -> Map(
-                "num" -> 47,
-                "clientMutationId" -> "abc"))))
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map("simpleMutation" -> Map("num" -> 47, "clientMutationId" -> "abc"))))
       }
 
       "Supports promise mutations" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             mutation M {
               simpleFutureMutation(input: {clientMutationId: "abc"}) {
                 num
@@ -132,19 +123,15 @@ class MutationSpec extends AnyWordSpec with Matchers with AwaitSupport with Resu
             }
           """)
 
-        Executor.execute(schema, doc, userContext = new Repo).await should be  (
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
           Map(
-            "data" -> Map(
-              "simpleFutureMutation" -> Map(
-                "num" -> 2,
-                "clientMutationId" -> "abc"))))
+            "data" -> Map("simpleFutureMutation" -> Map("num" -> 2, "clientMutationId" -> "abc"))))
       }
     }
 
     "Introspects correctly" should {
       "Supports promise mutations" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               __type(name: "SimpleMutationInput") {
                 name
@@ -164,36 +151,33 @@ class MutationSpec extends AnyWordSpec with Matchers with AwaitSupport with Resu
             }
           """)
 
-        Executor.execute(schema, doc, userContext = new Repo).await should be  (
-          Map(
-            "data" -> Map(
-              "__type" -> Map(
-                "name" -> "SimpleMutationInput",
-                "kind" -> "INPUT_OBJECT",
-                "inputFields" -> List(
-                  Map(
-                    "name" -> "num",
-                    "type" -> Map(
-                      "name" -> "Int",
-                      "kind" -> "SCALAR",
-                      "ofType" -> null
-                    )
-                  ),
-                  Map(
-                    "name" -> "clientMutationId",
-                    "type" -> Map(
-                      "name" -> "String",
-                      "kind" -> "SCALAR",
-                      "ofType" -> null
-                    )
-                  )
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map("__type" -> Map(
+            "name" -> "SimpleMutationInput",
+            "kind" -> "INPUT_OBJECT",
+            "inputFields" -> List(
+              Map(
+                "name" -> "num",
+                "type" -> Map(
+                  "name" -> "Int",
+                  "kind" -> "SCALAR",
+                  "ofType" -> null
                 )
-              ))))
+              ),
+              Map(
+                "name" -> "clientMutationId",
+                "type" -> Map(
+                  "name" -> "String",
+                  "kind" -> "SCALAR",
+                  "ofType" -> null
+                )
+              )
+            )
+          ))))
       }
 
       "Contains correct payload" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               __type(name: "SimpleMutationPayload") {
                 name
@@ -213,36 +197,33 @@ class MutationSpec extends AnyWordSpec with Matchers with AwaitSupport with Resu
             }
           """)
 
-        Executor.execute(schema, doc, userContext = new Repo).await should be  (
-          Map(
-            "data" -> Map(
-              "__type" -> Map(
-                "name" -> "SimpleMutationPayload",
-                "kind" -> "OBJECT",
-                "fields" -> List(
-                  Map(
-                    "name" -> "num",
-                    "type" -> Map(
-                      "name" -> "Int",
-                      "kind" -> "SCALAR",
-                      "ofType" -> null
-                    )
-                  ),
-                  Map(
-                    "name" -> "clientMutationId",
-                    "type" -> Map(
-                      "name" -> "String",
-                      "kind" -> "SCALAR",
-                      "ofType" -> null
-                    )
-                  )
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map("__type" -> Map(
+            "name" -> "SimpleMutationPayload",
+            "kind" -> "OBJECT",
+            "fields" -> List(
+              Map(
+                "name" -> "num",
+                "type" -> Map(
+                  "name" -> "Int",
+                  "kind" -> "SCALAR",
+                  "ofType" -> null
                 )
-              ))))
+              ),
+              Map(
+                "name" -> "clientMutationId",
+                "type" -> Map(
+                  "name" -> "String",
+                  "kind" -> "SCALAR",
+                  "ofType" -> null
+                )
+              )
+            )
+          ))))
       }
 
       "Contains correct field" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               __schema {
                 mutationType {
@@ -269,7 +250,7 @@ class MutationSpec extends AnyWordSpec with Matchers with AwaitSupport with Resu
             }
           """)
 
-        Executor.execute(schema, doc, userContext = new Repo).await should be  (
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
           Map(
             "data" -> Map(
               "__schema" -> Map(

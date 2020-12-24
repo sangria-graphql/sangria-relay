@@ -53,40 +53,52 @@ class GlobalIdSpec extends AnyWordSpec with Matchers with AwaitSupport {
     )
   }
 
-  val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition((id: GlobalId, ctx: Context[Repo, Unit]) => {
-    if (id.typeName == "User") ctx.ctx.Users.find(_.id == id.id)
-    else if (id.typeName == "CustomPhoto") ctx.ctx.Photos.find(_.photoId == id.id)
-    else ctx.ctx.Posts.find(_.postId == id.id.toInt)
-  }, Node.possibleNodeTypes[Repo, Node](UserType, PhotoType, PostType))
+  val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition(
+    (id: GlobalId, ctx: Context[Repo, Unit]) =>
+      if (id.typeName == "User") ctx.ctx.Users.find(_.id == id.id)
+      else if (id.typeName == "CustomPhoto") ctx.ctx.Photos.find(_.photoId == id.id)
+      else ctx.ctx.Posts.find(_.postId == id.id.toInt),
+    Node.possibleNodeTypes[Repo, Node](UserType, PhotoType, PostType)
+  )
 
-  val UserType: ObjectType[Unit, User] = ObjectType("User", interfaces[Unit, User](nodeInterface),
+  val UserType: ObjectType[Unit, User] = ObjectType(
+    "User",
+    interfaces[Unit, User](nodeInterface),
     fields[Unit, User](
       Node.globalIdField,
       Field("name", OptionType(StringType), resolve = _.value.name)))
 
-  val PhotoType: ObjectType[Repo, Photo] = ObjectType("Photo", interfaces[Repo, Photo](nodeInterface),
+  val PhotoType: ObjectType[Repo, Photo] = ObjectType(
+    "Photo",
+    interfaces[Repo, Photo](nodeInterface),
     fields[Repo, Photo](
       Node.globalIdField(Some("CustomPhoto")),
-      Field("width", OptionType(IntType), resolve = _.value.width)))
+      Field("width", OptionType(IntType), resolve = _.value.width))
+  )
 
-  val PostType: ObjectType[Repo, Post] = ObjectType("Post", interfaces[Repo, Post](nodeInterface),
+  val PostType: ObjectType[Repo, Post] = ObjectType(
+    "Post",
+    interfaces[Repo, Post](nodeInterface),
     fields[Repo, Post](
       Node.globalIdField,
       Field("text", OptionType(StringType), resolve = _.value.text)))
 
-  val QueryType: ObjectType[Repo, Unit] = ObjectType("Query",
+  val QueryType: ObjectType[Repo, Unit] = ObjectType(
+    "Query",
     fields[Repo, Unit](
       nodeField,
       nodesField,
-      Field("allObjects", OptionType(ListType(nodeInterface)),
-        resolve = ctx => ctx.ctx.Users ++ ctx.ctx.Photos ++ ctx.ctx.Posts)))
+      Field(
+        "allObjects",
+        OptionType(ListType(nodeInterface)),
+        resolve = ctx => ctx.ctx.Users ++ ctx.ctx.Photos ++ ctx.ctx.Posts))
+  )
 
   val schema = Schema(QueryType)
 
   "Global ID fields" should {
     "Gives different IDs" in {
-      val Success(doc) = QueryParser.parse(
-        """
+      val Success(doc) = QueryParser.parse("""
           {
             allObjects {
               id
@@ -94,21 +106,19 @@ class GlobalIdSpec extends AnyWordSpec with Matchers with AwaitSupport {
           }
         """)
 
-      Executor.execute(schema, doc, userContext = new Repo).await should be  (
-        Map(
-          "data" -> Map(
-            "allObjects" -> List(
-              Map("id" -> "VXNlcjox"),
-              Map("id" -> "VXNlcjoy"),
-              Map("id" -> "Q3VzdG9tUGhvdG86MQ=="),
-              Map("id" -> "Q3VzdG9tUGhvdG86Mg=="),
-              Map("id" -> "UG9zdDox"),
-              Map("id" -> "UG9zdDoy")))))
+      Executor.execute(schema, doc, userContext = new Repo).await should be(
+        Map("data" -> Map("allObjects" -> List(
+          Map("id" -> "VXNlcjox"),
+          Map("id" -> "VXNlcjoy"),
+          Map("id" -> "Q3VzdG9tUGhvdG86MQ=="),
+          Map("id" -> "Q3VzdG9tUGhvdG86Mg=="),
+          Map("id" -> "UG9zdDox"),
+          Map("id" -> "UG9zdDoy")
+        ))))
     }
 
     "Refetches the IDs" in {
-      val Success(doc) = QueryParser.parse(
-        """
+      val Success(doc) = QueryParser.parse("""
           {
             user: node(id: "VXNlcjox") {
               id
@@ -131,18 +141,12 @@ class GlobalIdSpec extends AnyWordSpec with Matchers with AwaitSupport {
           }
         """)
 
-      Executor.execute(schema, doc, userContext = new Repo).await should be  (
-        Map(
-          "data" -> Map(
-            "user" -> Map(
-              "id" -> "VXNlcjox",
-              "name" -> "John Doe"),
-            "photo" -> Map(
-              "id" -> "Q3VzdG9tUGhvdG86MQ==",
-              "width" -> 300),
-            "post" -> Map(
-              "id" -> "UG9zdDoy",
-              "text" -> "ipsum"))))
+      Executor.execute(schema, doc, userContext = new Repo).await should be(
+        Map("data" -> Map(
+          "user" -> Map("id" -> "VXNlcjox", "name" -> "John Doe"),
+          "photo" -> Map("id" -> "Q3VzdG9tUGhvdG86MQ==", "width" -> 300),
+          "post" -> Map("id" -> "UG9zdDoy", "text" -> "ipsum")
+        )))
     }
   }
 
