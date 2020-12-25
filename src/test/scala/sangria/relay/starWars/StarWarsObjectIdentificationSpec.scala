@@ -14,8 +14,7 @@ class StarWarsObjectIdentificationSpec extends AnyWordSpec with Matchers with Aw
   "Object Identification" when {
     "Fetching" should {
       "Correctly fetches the ID and name of the rebels" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             query RebelsQuery {
               rebels {
                 id
@@ -25,16 +24,12 @@ class StarWarsObjectIdentificationSpec extends AnyWordSpec with Matchers with Aw
           """)
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
-          Map(
-            "data" -> Map(
-              "rebels" -> Map(
-                "id" -> "RmFjdGlvbjox",
-                "name" -> "Alliance to Restore the Republic"))))
+          Map("data" -> Map(
+            "rebels" -> Map("id" -> "RmFjdGlvbjox", "name" -> "Alliance to Restore the Republic"))))
       }
 
       "Correctly refetches the rebels" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             query RebelsRefetchQuery {
               node(id: "RmFjdGlvbjox") {
                 id
@@ -46,16 +41,12 @@ class StarWarsObjectIdentificationSpec extends AnyWordSpec with Matchers with Aw
           """)
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
-          Map(
-            "data" -> Map(
-              "node" -> Map(
-                "id" -> "RmFjdGlvbjox",
-                "name" -> "Alliance to Restore the Republic"))))
+          Map("data" -> Map(
+            "node" -> Map("id" -> "RmFjdGlvbjox", "name" -> "Alliance to Restore the Republic"))))
       }
 
       "Correctly fetches the ID and name of the empire" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             query EmpireQuery {
               empire {
                 id
@@ -65,16 +56,11 @@ class StarWarsObjectIdentificationSpec extends AnyWordSpec with Matchers with Aw
           """)
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
-          Map(
-            "data" -> Map(
-              "empire" -> Map(
-                "id" -> "RmFjdGlvbjoy",
-                "name" -> "Galactic Empire"))))
+          Map("data" -> Map("empire" -> Map("id" -> "RmFjdGlvbjoy", "name" -> "Galactic Empire"))))
       }
 
       "Correctly refetches the empire" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             query EmpireRefetchQuery {
               node(id: "RmFjdGlvbjoy") {
                 id
@@ -86,16 +72,11 @@ class StarWarsObjectIdentificationSpec extends AnyWordSpec with Matchers with Aw
           """)
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
-          Map(
-            "data" -> Map(
-              "node" -> Map(
-                "id" -> "RmFjdGlvbjoy",
-                "name" -> "Galactic Empire"))))
+          Map("data" -> Map("node" -> Map("id" -> "RmFjdGlvbjoy", "name" -> "Galactic Empire"))))
       }
 
       "Correctly refetches the X-Wing" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             query XWingRefetchQuery {
               node(id: "U2hpcDox") {
                 id
@@ -107,11 +88,7 @@ class StarWarsObjectIdentificationSpec extends AnyWordSpec with Matchers with Aw
           """)
 
         Executor.execute(StarWarsSchema.schema, doc, userContext = new ShipRepo).await should be(
-          Map(
-            "data" -> Map(
-              "node" -> Map(
-                "id" -> "U2hpcDox",
-                "name" -> "X-Wing"))))
+          Map("data" -> Map("node" -> Map("id" -> "U2hpcDox", "name" -> "X-Wing"))))
       }
     }
   }

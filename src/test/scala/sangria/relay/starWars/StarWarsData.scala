@@ -4,13 +4,12 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import sangria.relay.{Identifiable, Node}
 
-/**
- * This defines a basic set of data for our Star Wars Schema.
- *
- * This data is hard coded for the sake of the demo, but you could imagine
- * fetching this data from a backend service rather than from hardcoded
- * JSON objects in a more complex demo.
- */
+/** This defines a basic set of data for our Star Wars Schema.
+  *
+  * This data is hard coded for the sake of the demo, but you could imagine
+  * fetching this data from a backend service rather than from hardcoded
+  * JSON objects in a more complex demo.
+  */
 object StarWarsData {
   case class Ship(id: String, name: String) extends Node
   case class Faction(id: String, name: String, ships: List[String])
@@ -30,8 +29,9 @@ object StarWarsData {
     val tieFighter = Ship("6", "TIE Fighter")
     val tieInterceptor = Ship("7", "TIE Interceptor")
     val executor = Ship("8", "Executor")
-    
-    val All = xwing :: ywing :: awing :: falcon :: homeOne :: tieFighter :: tieInterceptor :: executor :: Nil 
+
+    val All =
+      xwing :: ywing :: awing :: falcon :: homeOne :: tieFighter :: tieInterceptor :: executor :: Nil
   }
 
   object Factions {
@@ -59,9 +59,9 @@ object StarWarsData {
       newShip
     }
 
-    def getShip(id: String) = ships find (_.id == id)
-    def getFaction(id: String) = factions find (_.id == id)
-    def getRebels = factions find (_.id == "1")
-    def getEmpire = factions find (_.id == "2")
+    def getShip(id: String) = ships.find(_.id == id)
+    def getFaction(id: String) = factions.find(_.id == id)
+    def getRebels = factions.find(_.id == "1")
+    def getEmpire = factions.find(_.id == "2")
   }
 }

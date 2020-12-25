@@ -26,9 +26,8 @@ class ConnectionWithEdgeSpec extends AnyWordSpec with Matchers with AwaitSupport
     val hermes = User("003", "Hermes")
 
     val Users = cubert :: steve :: hermes :: Nil
-    def getUser(userId: String): User = {
+    def getUser(userId: String): User =
       Users.find(_.id == userId).get
-    }
 
     val planetExpress = Account("Planet Express", "AO001")
     val planEx = Account("PlanEx", "AO002")
@@ -38,13 +37,12 @@ class ConnectionWithEdgeSpec extends AnyWordSpec with Matchers with AwaitSupport
 
     val pilot = Role("pilot", "Pilot")
     val accountant = Role("accountant", "Accountant")
-    val admin =  Role("admin", "Admin")
+    val admin = Role("admin", "Admin")
 
     val Roles = pilot :: accountant :: admin :: Nil
 
-    def getRole(roleId: String): Role = {
+    def getRole(roleId: String): Role =
       Roles.find(_.id == roleId).get
-    }
 
     val AccountUsers = List(
       AccountUser(accountId = planetExpress.id, userId = hermes.id, roleId = accountant.id),
@@ -52,43 +50,54 @@ class ConnectionWithEdgeSpec extends AnyWordSpec with Matchers with AwaitSupport
       AccountUser(accountId = awesomeExpress.id, userId = cubert.id, roleId = pilot.id)
     )
 
-    def getUsersForAccount(accountId: String): List[UserEdge] = {
-      AccountUsers.filter(_.accountId == accountId).map(au =>
-        UserEdge(node = getUser(au.userId), cursor = au.userId, roleId = au.roleId)
-      )
-    }
+    def getUsersForAccount(accountId: String): List[UserEdge] =
+      AccountUsers
+        .filter(_.accountId == accountId)
+        .map(au => UserEdge(node = getUser(au.userId), cursor = au.userId, roleId = au.roleId))
   }
 
-  val UserType: ObjectType[Repo, User] = ObjectType("User", () => fields(
-    Field("id", StringType, resolve = _.value.id),
-    Field("name", StringType, resolve = _.value.name)
-  ))
+  val UserType: ObjectType[Repo, User] = ObjectType(
+    "User",
+    () =>
+      fields(
+        Field("id", StringType, resolve = _.value.id),
+        Field("name", StringType, resolve = _.value.name)
+      ))
 
-  val AccountType: ObjectType[Repo, Account] = ObjectType("Account", () => fields(
-    Field("id", StringType, resolve = _.value.id),
-    Field("number", StringType, resolve = _.value.number),
-    Field("users", userConnection, arguments = Connection.Args.All,
-      resolve = c => {
-        val edges = c.ctx.getUsersForAccount(c.value.id)
-        val firstEdge = edges.headOption
-        val lastEdge = edges.lastOption
+  val AccountType: ObjectType[Repo, Account] = ObjectType(
+    "Account",
+    () =>
+      fields(
+        Field("id", StringType, resolve = _.value.id),
+        Field("number", StringType, resolve = _.value.number),
+        Field(
+          "users",
+          userConnection,
+          arguments = Connection.Args.All,
+          resolve = c => {
+            val edges = c.ctx.getUsersForAccount(c.value.id)
+            val firstEdge = edges.headOption
+            val lastEdge = edges.lastOption
 
-        DefaultConnection(
-           PageInfo(
-            startCursor = firstEdge map (_.cursor),
-            endCursor = lastEdge map (_.cursor)
-          ),
-          edges
+            DefaultConnection(
+              PageInfo(
+                startCursor = firstEdge.map(_.cursor),
+                endCursor = lastEdge.map(_.cursor)
+              ),
+              edges
+            )
+          }
         )
-      }
-    )
-  ))
+      )
+  )
 
-  val RoleType: ObjectType[Repo, Role] = ObjectType("Role", () => fields(
-    Field("id", StringType, resolve = _.value.id),
-    Field("display", StringType, resolve = _.value.display)
-  ))
-
+  val RoleType: ObjectType[Repo, Role] = ObjectType(
+    "Role",
+    () =>
+      fields(
+        Field("id", StringType, resolve = _.value.id),
+        Field("display", StringType, resolve = _.value.display)
+      ))
 
   val ConnectionDefinition(_, userConnection) =
     Connection.definitionWithEdge[Repo, PageInfo, Connection, User, UserEdge](
@@ -99,16 +108,15 @@ class ConnectionWithEdgeSpec extends AnyWordSpec with Matchers with AwaitSupport
       )
     )
 
-  val QueryType = ObjectType("Query", fields[Repo, Unit](
-    Field("accounts", ListType(AccountType), resolve = _.ctx.Accounts))
-  )
+  val QueryType = ObjectType(
+    "Query",
+    fields[Repo, Unit](Field("accounts", ListType(AccountType), resolve = _.ctx.Accounts)))
 
   val schema = Schema(QueryType, additionalTypes = AccountType :: UserType :: RoleType :: Nil)
 
   "Connection.definitionWithEdge" should {
     "Includes edge fields correctly" in {
-      val Success(doc) = QueryParser.parse(
-        """
+      val Success(doc) = QueryParser.parse("""
           query AccountQuery {
             accounts {
               users {
@@ -127,7 +135,7 @@ class ConnectionWithEdgeSpec extends AnyWordSpec with Matchers with AwaitSupport
 
       val r = Executor.execute(schema, doc, userContext = new Repo).await
 
-      r should be (
+      r should be(
         Map(
           "data" -> Map(
             "accounts" -> List(

@@ -12,28 +12,25 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class ConnectionWithCustomPageInfoSpec extends AnyWordSpec with Matchers with AwaitSupport {
 
-  /**
-   * custom PageInfo to be included in Connection
-   */
+  /** custom PageInfo to be included in Connection
+    */
   case class CustomPageInfo(
-    currentPage: Int,
-    hasNextPage: Boolean = false,
-    hasPreviousPage: Boolean = false,
-    startCursor: Option[String] = None,
-    endCursor: Option[String] = None) extends PageInfo
+      currentPage: Int,
+      hasNextPage: Boolean = false,
+      hasPreviousPage: Boolean = false,
+      startCursor: Option[String] = None,
+      endCursor: Option[String] = None)
+      extends PageInfo
 
-  /**
-   * custom Connection includes CustomPageInfo
-   */
-  case class CustomConnection[T](
-    pageInfo: CustomPageInfo,
-    edges: Seq[Edge[T]])
+  /** custom Connection includes CustomPageInfo
+    */
+  case class CustomConnection[T](pageInfo: CustomPageInfo, edges: Seq[Edge[T]])
 
-  implicit def customConnectionLike[T] = new ConnectionLike[CustomConnection, CustomPageInfo, T, Edge[T]] {
-    override def pageInfo(conn: CustomConnection[T]): CustomPageInfo = conn.pageInfo
-    override def edges(conn: CustomConnection[T]): Seq[Edge[T]] = conn.edges
-  }
-
+  implicit def customConnectionLike[T] =
+    new ConnectionLike[CustomConnection, CustomPageInfo, T, Edge[T]] {
+      override def pageInfo(conn: CustomConnection[T]): CustomPageInfo = conn.pageInfo
+      override def edges(conn: CustomConnection[T]): Seq[Edge[T]] = conn.edges
+    }
 
   case class User(id: String, name: String)
   case class Task(id: String, userId: String, description: String)
@@ -57,40 +54,64 @@ class ConnectionWithCustomPageInfoSpec extends AnyWordSpec with Matchers with Aw
 
     private val Tasks = pencil :: milk :: apple :: banana :: orange :: grape :: strawberry :: Nil
 
-    def getUser(userId: String): User = {
+    def getUser(userId: String): User =
       Users.find(_.id == userId).get
-    }
 
-    def getTasksForUser(userId: String, limit: Int = 1, offset: Int = 0): (Int, List[Edge[Task]]) = {
-      val totalCounts = Tasks.count { _.userId == userId }
-      val edges: List[Edge[Task]] = Tasks.filter { _.userId == userId }.slice(offset, offset + limit).map {
-        task => Edge(node = task, cursor = task.id)
-      }
+    def getTasksForUser(
+        userId: String,
+        limit: Int = 1,
+        offset: Int = 0): (Int, List[Edge[Task]]) = {
+      val totalCounts = Tasks.count(_.userId == userId)
+      val edges: List[Edge[Task]] =
+        Tasks.filter(_.userId == userId).slice(offset, offset + limit).map { task =>
+          Edge(node = task, cursor = task.id)
+        }
 
       (totalCounts, edges)
     }
   }
 
-  val TaskType: ObjectType[Repo, Task] = ObjectType("Task", () => fields(
-    Field("id", StringType, resolve = _.value.id),
-    Field("userId", StringType, resolve = _.value.userId),
-    Field("description", StringType, resolve = _.value.description)
-  ))
+  val TaskType: ObjectType[Repo, Task] = ObjectType(
+    "Task",
+    () =>
+      fields(
+        Field("id", StringType, resolve = _.value.id),
+        Field("userId", StringType, resolve = _.value.userId),
+        Field("description", StringType, resolve = _.value.description)
+      )
+  )
 
   val customPageInfoType: ObjectType[Repo, CustomPageInfo] =
-    ObjectType("CustomPageInfo",
-      () => fields(
-        Field("hasNextPage", BooleanType, Some("When paginating forwards, are there more items?"),
-          resolve = _.value.hasNextPage),
-        Field("hasPreviousPage", BooleanType, Some("When paginating backwards, are there more items?"),
-          resolve = _.value.hasPreviousPage),
-        Field("startCursor", OptionType(StringType), Some("When paginating backwards, the cursor to continue."),
-          resolve = _.value.startCursor),
-        Field("endCursor", OptionType(StringType), Some("When paginating forwards, the cursor to continue."),
-          resolve = _.value.endCursor),
-        Field("currentPage", IntType, Some("When paginating, where is the cursor?"),
-          resolve = _.value.currentPage)
-      )
+    ObjectType(
+      "CustomPageInfo",
+      () =>
+        fields(
+          Field(
+            "hasNextPage",
+            BooleanType,
+            Some("When paginating forwards, are there more items?"),
+            resolve = _.value.hasNextPage),
+          Field(
+            "hasPreviousPage",
+            BooleanType,
+            Some("When paginating backwards, are there more items?"),
+            resolve = _.value.hasPreviousPage),
+          Field(
+            "startCursor",
+            OptionType(StringType),
+            Some("When paginating backwards, the cursor to continue."),
+            resolve = _.value.startCursor),
+          Field(
+            "endCursor",
+            OptionType(StringType),
+            Some("When paginating forwards, the cursor to continue."),
+            resolve = _.value.endCursor),
+          Field(
+            "currentPage",
+            IntType,
+            Some("When paginating, where is the cursor?"),
+            resolve = _.value.currentPage)
+        )
     )
 
   val ConnectionDefinition(_, taskConnection) =
@@ -105,40 +126,47 @@ class ConnectionWithCustomPageInfoSpec extends AnyWordSpec with Matchers with Aw
     val PageSize = Argument("pageSize", IntType)
   }
 
-  val UserType: ObjectType[Repo, User] = ObjectType("User", () => fields(
-    Field("id", StringType, resolve = _.value.id),
-    Field("name", StringType, resolve = _.value.name),
-    Field("tasks", taskConnection, arguments = Args.PageNo :: Args.PageSize :: Nil, resolve = {
-      ctx =>
-        val (totalPage, currentPage, edges) = ctx.withArgs(Args.PageNo, Args.PageSize) {
-          (pageNo, pageSize) =>
-            val offset = (pageNo - 1) * pageSize
-            val (totalCount, _edges) = ctx.ctx.getTasksForUser(ctx.value.id, pageSize, offset)
-            val _totalPage = math.ceil(totalCount.toDouble / pageNo.toDouble)
-            (_totalPage.toInt, pageNo, _edges)
-        }
+  val UserType: ObjectType[Repo, User] = ObjectType(
+    "User",
+    () =>
+      fields(
+        Field("id", StringType, resolve = _.value.id),
+        Field("name", StringType, resolve = _.value.name),
+        Field(
+          "tasks",
+          taskConnection,
+          arguments = Args.PageNo :: Args.PageSize :: Nil,
+          resolve = { ctx =>
+            val (totalPage, currentPage, edges) =
+              ctx.withArgs(Args.PageNo, Args.PageSize) { (pageNo, pageSize) =>
+                val offset = (pageNo - 1) * pageSize
+                val (totalCount, _edges) = ctx.ctx.getTasksForUser(ctx.value.id, pageSize, offset)
+                val _totalPage = math.ceil(totalCount.toDouble / pageNo.toDouble)
+                (_totalPage.toInt, pageNo, _edges)
+              }
 
-        CustomConnection[Task](
-          CustomPageInfo(
-            currentPage,
-            hasNextPage = currentPage < totalPage,
-            hasPreviousPage = 1 < currentPage
-          ),
-          edges
+            CustomConnection[Task](
+              CustomPageInfo(
+                currentPage,
+                hasNextPage = currentPage < totalPage,
+                hasPreviousPage = 1 < currentPage
+              ),
+              edges
+            )
+          }
         )
-    })
-  ))
-
-  val QueryType = ObjectType("Query", fields[Repo, Unit](
-    Field("users", ListType(UserType), resolve = _.ctx.Users))
+      )
   )
+
+  val QueryType = ObjectType(
+    "Query",
+    fields[Repo, Unit](Field("users", ListType(UserType), resolve = _.ctx.Users)))
 
   val schema = Schema(QueryType, additionalTypes = UserType :: TaskType :: Nil)
 
   "Connection.definitionWithEdge" should {
     "Includes pageInfo fields correctly" in {
-      val Success(doc) = QueryParser.parse(
-        """
+      val Success(doc) = QueryParser.parse("""
           query UserQuery {
             users {
               id
@@ -159,7 +187,7 @@ class ConnectionWithCustomPageInfoSpec extends AnyWordSpec with Matchers with Aw
 
       val r = Executor.execute(schema, doc, userContext = new Repo).await
 
-      r should be (
+      r should be(
         Map(
           "data" -> Map(
             "users" -> List(
@@ -206,4 +234,3 @@ class ConnectionWithCustomPageInfoSpec extends AnyWordSpec with Matchers with Aw
     }
   }
 }
-

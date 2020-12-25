@@ -14,8 +14,7 @@ import org.scalatest.wordspec.AnyWordSpec
 class StarWarsMutationSpec extends AnyWordSpec with Matchers with AwaitSupport {
   "Mutation" should {
     "Correctly mutates the data set" in {
-      val Success(doc) = QueryParser.parse(
-        """
+      val Success(doc) = QueryParser.parse("""
           mutation AddBWingQuery($input: IntroduceShipInput!) {
             introduceShip(input: $input) {
               ship {
@@ -37,8 +36,10 @@ class StarWarsMutationSpec extends AnyWordSpec with Matchers with AwaitSupport {
           "clientMutationId" -> "abcde"
         )
       )
-      
-      Executor.execute(StarWarsSchema.schema, doc, variables = vars, userContext = new ShipRepo).await should be(
+
+      Executor
+        .execute(StarWarsSchema.schema, doc, variables = vars, userContext = new ShipRepo)
+        .await should be(
         Map(
           "data" -> Map(
             "introduceShip" -> Map(

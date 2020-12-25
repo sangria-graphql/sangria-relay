@@ -32,30 +32,38 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
     )
   }
 
-  val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definitionById((id: String, ctx: Context[Repo, Unit]) => {
-    if (ctx.ctx.Users exists (_.id == id)) ctx.ctx.Users.find(_.id == id)
-    else ctx.ctx.Photos.find(_.photoId == id)
-  }, Node.possibleNodeTypes[Repo, Node](UserType, PhotoType))
+  val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definitionById(
+    (id: String, ctx: Context[Repo, Unit]) =>
+      if (ctx.ctx.Users.exists(_.id == id)) ctx.ctx.Users.find(_.id == id)
+      else ctx.ctx.Photos.find(_.photoId == id),
+    Node.possibleNodeTypes[Repo, Node](UserType, PhotoType)
+  )
 
-  val UserType: ObjectType[Unit, User] = ObjectType("User", interfaces[Unit, User](nodeInterface),
+  val UserType: ObjectType[Unit, User] = ObjectType(
+    "User",
+    interfaces[Unit, User](nodeInterface),
     fields[Unit, User](
       Field("id", IDType, resolve = _.value.id),
-      Field("name", OptionType(StringType), resolve = _.value.name)))
+      Field("name", OptionType(StringType), resolve = _.value.name))
+  )
 
-  val PhotoType: ObjectType[Unit, Photo] = ObjectType("Photo", interfaces[Unit, Photo](nodeInterface),
+  val PhotoType: ObjectType[Unit, Photo] = ObjectType(
+    "Photo",
+    interfaces[Unit, Photo](nodeInterface),
     fields[Unit, Photo](
       Field("id", IDType, resolve = _.value.photoId),
-      Field("width", OptionType(IntType), resolve = _.value.width)))
+      Field("width", OptionType(IntType), resolve = _.value.width))
+  )
 
-  val QueryType: ObjectType[Repo, Unit] = ObjectType("Query", fields[Repo, Unit](nodeField, nodesField))
+  val QueryType: ObjectType[Repo, Unit] =
+    ObjectType("Query", fields[Repo, Unit](nodeField, nodesField))
 
   val schema = Schema(QueryType)
 
   "Node interface and fields" should {
     "Allows refetching" should {
       "Gets the correct ID for users" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               node(id: "1") {
                 id
@@ -63,16 +71,12 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-
-        Executor.execute(schema, doc, userContext = new Repo).await should be (
-          Map(
-            "data" -> Map(
-              "node" -> Map("id" -> "1"))))
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map("node" -> Map("id" -> "1"))))
       }
 
       "gets the correct IDs for users" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               nodes(ids: ["1", "2"]) {
                 id
@@ -80,15 +84,12 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-        Executor.execute(schema, doc, userContext = new Repo).await should be (
-          Map(
-            "data" -> Map(
-              "nodes" -> List(Map("id" -> "1"), Map("id" -> "2")))))
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map("nodes" -> List(Map("id" -> "1"), Map("id" -> "2")))))
       }
 
       "Gets the correct ID for photos" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               node(id: "4") {
                 id
@@ -96,16 +97,12 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-
-        Executor.execute(schema, doc, userContext = new Repo).await should be (
-          Map(
-            "data" -> Map(
-              "node" -> Map("id" -> "4"))))
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map("node" -> Map("id" -> "4"))))
       }
 
       "Gets the correct width for photos" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               node(id: "4") {
                 id
@@ -116,18 +113,12 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-
-        Executor.execute(schema, doc, userContext = new Repo).await should be (
-          Map(
-            "data" -> Map(
-              "node" -> Map(
-                "id" -> "4",
-                "width" -> 400))))
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map("node" -> Map("id" -> "4", "width" -> 400))))
       }
 
       "gets the correct IDs for photos" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               nodes(ids: ["3", "4"]) {
                 id
@@ -138,18 +129,13 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-
-        Executor.execute(schema, doc, userContext = new Repo).await should be (
-          Map(
-            "data" -> Map(
-              "nodes" -> List(
-                Map("id" -> "3", "width" -> 300),
-                Map("id" -> "4", "width" -> 400)))))
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map(
+            "nodes" -> List(Map("id" -> "3", "width" -> 300), Map("id" -> "4", "width" -> 400)))))
       }
 
       "gets the correct IDs for multiple types" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               nodes(ids: ["1", "3"]) {
                 id
@@ -165,18 +151,15 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-
-        Executor.execute(schema, doc, userContext = new Repo).await should be (
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
           Map(
-            "data" -> Map(
-              "nodes" -> List(
-                Map("id" -> "1", "name" -> "John Doe"),
-                Map("id" -> "3", "width" -> 300)))))
+            "data" -> Map("nodes" -> List(
+              Map("id" -> "1", "name" -> "John Doe"),
+              Map("id" -> "3", "width" -> 300)))))
       }
 
       "Gets the correct type name for users" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               node(id: "1") {
                 id
@@ -185,18 +168,12 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-
-        Executor.execute(schema, doc, userContext = new Repo).await should be (
-          Map(
-            "data" -> Map(
-              "node" -> Map(
-                "id" -> "1",
-                "__typename" -> "User"))))
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map("node" -> Map("id" -> "1", "__typename" -> "User"))))
       }
 
       "Gets the correct type name for photos" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               node(id: "4") {
                 id
@@ -205,18 +182,12 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-
-        Executor.execute(schema, doc, userContext = new Repo).await should be (
-          Map(
-            "data" -> Map(
-              "node" -> Map(
-                "id" -> "4",
-                "__typename" -> "Photo"))))
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map("node" -> Map("id" -> "4", "__typename" -> "Photo"))))
       }
 
       "Ignores photo fragments on user" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               node(id: "1") {
                 id
@@ -227,17 +198,12 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-
-        Executor.execute(schema, doc, userContext = new Repo).await should be (
-          Map(
-            "data" -> Map(
-              "node" -> Map(
-                "id" -> "1"))))
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map("node" -> Map("id" -> "1"))))
       }
 
       "Returns null for bad IDs" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               node(id: "5") {
                 id
@@ -245,16 +211,12 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-
-        Executor.execute(schema, doc, userContext = new Repo).await should be (
-          Map(
-            "data" -> Map(
-              "node" -> null)))
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map("node" -> null)))
       }
 
       "Returns nulls for bad IDs" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               nodes(ids: ["3", "5"]) {
                 id
@@ -262,18 +224,14 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-
-        Executor.execute(schema, doc, userContext = new Repo).await should be (
-          Map(
-            "data" -> Map(
-              "nodes" -> List(Map("id" -> "3"), null))))
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
+          Map("data" -> Map("nodes" -> List(Map("id" -> "3"), null))))
       }
     }
 
     "Correctly introspects" should {
       "Lists all relevant abstract and concrete types" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               __schema {
                 types {
@@ -283,14 +241,20 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-        Executor.execute(schema, doc, userContext = new Repo).await
-          .getProp("data").getProp("__schema").getProp("types").asList.map(_.getProp("name")) should (
-            contain("Node") and contain("User") and contain("Photo"))
+        Executor
+          .execute(schema, doc, userContext = new Repo)
+          .await
+          .getProp("data")
+          .getProp("__schema")
+          .getProp("types")
+          .asList
+          .map(_.getProp("name")) should (contain("Node")
+          .and(contain("User"))
+          .and(contain("Photo")))
       }
 
       "Has correct node interface" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               __type(name: "Node") {
                 name
@@ -309,8 +273,7 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-
-        Executor.execute(schema, doc, userContext = new Repo).await should be (
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
           Map(
             "data" -> Map(
               "__type" -> Map(
@@ -332,8 +295,7 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
       }
 
       "Has correct node root field" in {
-        val Success(doc) = QueryParser.parse(
-          """
+        val Success(doc) = QueryParser.parse("""
             {
               __schema {
                 queryType {
@@ -359,7 +321,7 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
             }
           """)
 
-        Executor.execute(schema, doc, userContext = new Repo).await should be (
+        Executor.execute(schema, doc, userContext = new Repo).await should be(
           Map(
             "data" -> Map(
               "__schema" -> Map(
@@ -367,30 +329,22 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
                   "fields" -> List(
                     Map(
                       "name" -> "node",
-                      "type" -> Map(
-                        "name" -> "Node",
-                        "kind" -> "INTERFACE"),
-                      "args" -> Vector(
-                        Map(
-                          "name" -> "id",
-                          "type" -> Map(
-                            "kind" -> "NON_NULL",
-                            "ofType" -> Map(
-                              "name" -> "ID",
-                              "kind" -> "SCALAR"))))),
+                      "type" -> Map("name" -> "Node", "kind" -> "INTERFACE"),
+                      "args" -> Vector(Map(
+                        "name" -> "id",
+                        "type" -> Map(
+                          "kind" -> "NON_NULL",
+                          "ofType" -> Map("name" -> "ID", "kind" -> "SCALAR"))))
+                    ),
                     Map(
                       "name" -> "nodes",
-                      "type" -> Map(
-                        "name" -> null,
-                        "kind" -> "NON_NULL"),
-                      "args" -> Vector(
-                        Map(
-                          "name" -> "ids",
-                          "type" -> Map(
-                            "kind" -> "NON_NULL",
-                            "ofType" -> Map(
-                              "name" -> null,
-                              "kind" -> "LIST")))))
+                      "type" -> Map("name" -> null, "kind" -> "NON_NULL"),
+                      "args" -> Vector(Map(
+                        "name" -> "ids",
+                        "type" -> Map(
+                          "kind" -> "NON_NULL",
+                          "ofType" -> Map("name" -> null, "kind" -> "LIST"))))
+                    )
                   )
                 )
               ))))
