@@ -1,5 +1,6 @@
 # folders
 .idea
+.bsp
 target
 lib
 classes
