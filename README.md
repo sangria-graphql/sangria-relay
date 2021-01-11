@@ -5,14 +5,14 @@
 ![Continuous Integration](https://github.com/sangria-graphql/sangria-relay/workflows/Continuous%20Integration/badge.svg)
 [![Build Status](https://travis-ci.com/sangria-graphql/sangria-relay.svg?branch=master)](https://travis-ci.com/sangria-graphql/sangria-relay)
 [![Coverage Status](http://coveralls.io/repos/sangria-graphql/sangria-relay/badge.svg?branch=master&service=github)](http://coveralls.io/github/sangria-graphql/sangria-relay?branch=master)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-relay_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-relay_2.11)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-relay_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-relay_2.12)
 [![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
 [![Join the chat at https://gitter.im/sangria-graphql/sangria](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sangria-graphql/sangria?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 SBT Configuration:
 
 ```scala
-libraryDependencies += "org.sangria-graphql" %% "sangria-relay" % "1.4.2"
+libraryDependencies += "org.sangria-graphql" %% "sangria-relay" % "<last version>"
 ```
 
 More info and the documentation can be found in the project home page:
