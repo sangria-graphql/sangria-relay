@@ -22,7 +22,7 @@ javacOptions ++= Seq("-source", "8", "-target", "8")
 
 libraryDependencies ++= Seq(
   "org.sangria-graphql" %% "sangria" % "2.1.0",
-  "org.scalatest" %% "scalatest" % "3.2.3" % Test)
+  "org.scalatest" %% "scalatest" % "3.2.4" % Test)
 
 // Publishing
 releaseCrossBuild := true
