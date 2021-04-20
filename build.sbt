@@ -10,11 +10,9 @@ licenses := Seq(
 // sbt-github-actions needs configuration in `ThisBuild`
 ThisBuild / crossScalaVersions := Seq("2.12.13", "2.13.5")
 ThisBuild / scalaVersion := crossScalaVersions.value.last
-ThisBuild / githubWorkflowPublishTargetBranches := List()
 ThisBuild / githubWorkflowBuildPreamble += WorkflowStep.Sbt(
   List("scalafmtCheckAll"),
   name = Some("Check formatting"))
-
 scalacOptions ++= Seq("-deprecation", "-feature")
 
 scalacOptions += "-target:jvm-1.8"
@@ -25,18 +23,21 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.7" % Test)
 
 // Publishing
-releaseCrossBuild := true
-releasePublishArtifactsAction := PgpKeys.publishSigned.value
-releaseVcsSign := true
-publishMavenStyle := true
-Test / publishArtifact := false
-pomIncludeRepository := (_ => false)
-publishTo := Some(
-  if (version.value.trim.endsWith("SNAPSHOT"))
-    "snapshots".at("https://oss.sonatype.org/content/repositories/snapshots")
-  else
-    "releases".at("https://oss.sonatype.org/service/local/staging/deploy/maven2"))
+ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
+ThisBuild / githubWorkflowPublishTargetBranches :=
+  Seq(RefPredicate.StartsWith(Ref.Tag("v")))
 
+ThisBuild / githubWorkflowPublish := Seq(
+  WorkflowStep.Sbt(
+    List("ci-release"),
+    env = Map(
+      "PGP_PASSPHRASE" -> "${{ secrets.PGP_PASSPHRASE }}",
+      "PGP_SECRET" -> "${{ secrets.PGP_SECRET }}",
+      "SONATYPE_PASSWORD" -> "${{ secrets.SONATYPE_PASSWORD }}",
+      "SONATYPE_USERNAME" -> "${{ secrets.SONATYPE_USERNAME }}"
+    )
+  )
+)
 resolvers += "Sonatype snapshots".at("https://oss.sonatype.org/content/repositories/snapshots/")
 
 startYear := Some(2015)
