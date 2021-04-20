@@ -29,7 +29,7 @@ releaseCrossBuild := true
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
 releaseVcsSign := true
 publishMavenStyle := true
-publishArtifact in Test := false
+Test / publishArtifact := false
 pomIncludeRepository := (_ => false)
 publishTo := Some(
   if (version.value.trim.endsWith("SNAPSHOT"))
@@ -53,7 +53,6 @@ scmInfo := Some(
   ))
 
 // nice *magenta* prompt!
-
-shellPrompt in ThisBuild := { state =>
+ThisBuild / shellPrompt := { state =>
   scala.Console.MAGENTA + Project.extract(state).currentRef.project + "> " + scala.Console.RESET
 }
