@@ -1,10 +1,10 @@
 ![Scagria Relay Support](https://raw.githubusercontent.com/sangria-graphql/sangria-logo/master/sangria-relay-logo.png)
 
-**sangria-relay** is a library to help construct a sangria server supporting react-relay. [Sangria](https://sangria-graphql.github.io/) is a scala [GraphQL](http://facebook.github.io/graphql/) library.
+**sangria-relay** is a library to help construct a sangria server supporting [React Relay](https://relay.dev/). [Sangria](https://sangria-graphql.github.io/) is a scala [GraphQL](http://facebook.github.io/graphql/) library.
 
 ![Continuous Integration](https://github.com/sangria-graphql/sangria-relay/workflows/Continuous%20Integration/badge.svg)
 [![Coverage Status](http://coveralls.io/repos/sangria-graphql/sangria-relay/badge.svg?branch=master&service=github)](http://coveralls.io/github/sangria-graphql/sangria-relay?branch=master)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-relay_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-relay_2.12)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-relay_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-relay_2.13)
 [![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
 [![Join the chat at https://gitter.im/sangria-graphql/sangria](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sangria-graphql/sangria?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
