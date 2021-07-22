@@ -1,21 +1,21 @@
 name := "sangria-relay"
 organization := "org.sangria-graphql"
-mimaPreviousArtifacts := Set("org.sangria-graphql" %% "sangria-relay" % "1.4.2")
+mimaPreviousArtifacts := Set("org.sangria-graphql" %% "sangria-relay" % "2.1.0")
 
 description := "Sangria Relay Support"
-homepage := Some(url("http://sangria-graphql.org"))
+homepage := Some(url("https://sangria-graphql.github.io/"))
 licenses := Seq(
-  "Apache License, ASL Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
+  "Apache License, ASL Version 2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0"))
 
 // sbt-github-actions needs configuration in `ThisBuild`
 ThisBuild / crossScalaVersions := Seq("2.12.14", "2.13.6")
 ThisBuild / scalaVersion := crossScalaVersions.value.last
-ThisBuild / githubWorkflowBuildPreamble += WorkflowStep.Sbt(
-  List("scalafmtCheckAll"),
-  name = Some("Check formatting"))
-scalacOptions ++= Seq("-deprecation", "-feature")
+ThisBuild / githubWorkflowBuildPreamble ++= List(
+  WorkflowStep.Sbt(List("mimaReportBinaryIssues"), name = Some("Check binary compatibility")),
+  WorkflowStep.Sbt(List("scalafmtCheckAll"), name = Some("Check formatting"))
+)
 
-scalacOptions += "-target:jvm-1.8"
+scalacOptions ++= Seq("-deprecation", "-feature", "-target:jvm-1.8")
 javacOptions ++= Seq("-source", "8", "-target", "8")
 
 libraryDependencies ++= Seq(
@@ -38,7 +38,6 @@ ThisBuild / githubWorkflowPublish := Seq(
     )
   )
 )
-resolvers += "Sonatype snapshots".at("https://oss.sonatype.org/content/repositories/snapshots/")
 
 startYear := Some(2015)
 organizationHomepage := Some(url("https://github.com/sangria-graphql"))
