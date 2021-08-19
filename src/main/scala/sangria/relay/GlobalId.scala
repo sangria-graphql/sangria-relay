@@ -11,13 +11,13 @@ case class GlobalId(typeName: String, id: String) {
 object GlobalId {
   def toGlobalId(globalId: GlobalId): String = toGlobalId(globalId.typeName, globalId.id)
 
-  /** Takes a type name and an ID specific to that type name, and returns a
-    * "global ID" that is unique among all types.
+  /** Takes a type name and an ID specific to that type name, and returns a "global ID" that is
+    * unique among all types.
     */
   def toGlobalId(typeName: String, id: String): String = Base64.encode(s"$typeName:$id")
 
-  /** Takes the "global ID" created by toGlobalID, and returns the type name and ID
-    * used to create it.
+  /** Takes the "global ID" created by toGlobalID, and returns the type name and ID used to create
+    * it.
     */
   def fromGlobalId(globalId: String) =
     Base64.decode(globalId).flatMap { decoded =>

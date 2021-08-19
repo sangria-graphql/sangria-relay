@@ -5,83 +5,48 @@ import sangria.relay.GlobalId.GlobalIdTypeAlias
 import sangria.relay.starWars.StarWarsData.{Faction, Ship, ShipRepo}
 import sangria.schema._
 
-/** This is a basic end-to-end test, designed to demonstrate the various
-  * capabilities of a Relay-compliant GraphQL server.
+/** This is a basic end-to-end test, designed to demonstrate the various capabilities of a
+  * Relay-compliant GraphQL server.
   *
-  * It is recommended that readers of this test be familiar with
-  * the end-to-end test in GraphQL.js first, as this test skips
-  * over the basics covered there in favor of illustrating the
-  * key aspects of the Relay spec that this test is designed to illustrate.
+  * It is recommended that readers of this test be familiar with the end-to-end test in GraphQL.js
+  * first, as this test skips over the basics covered there in favor of illustrating the key aspects
+  * of the Relay spec that this test is designed to illustrate.
   *
-  * We will create a GraphQL schema that describes the major
-  * factions and ships in the original Star Wars trilogy.
-  *
-  * NOTE: This may contain spoilers for the original Star
+  * We will create a GraphQL schema that describes the major factions and ships in the original Star
   * Wars trilogy.
   *
-  * Using our shorthand to describe type systems, the type system for our
-  * example will be the following:
+  * NOTE: This may contain spoilers for the original Star Wars trilogy.
   *
-  * interface Node {
-  *   id: ID!
-  * }
+  * Using our shorthand to describe type systems, the type system for our example will be the
+  * following:
   *
-  * type Faction : Node {
-  *   id: ID!
-  *   name: String
-  *   ships: ShipConnection
-  * }
+  * interface Node { id: ID! }
   *
-  * type Ship : Node {
-  *   id: ID!
-  *   name: String
-  * }
+  * type Faction : Node { id: ID! name: String ships: ShipConnection }
   *
-  * type ShipConnection {
-  *   edges: [ShipEdge]
-  *   pageInfo: PageInfo!
-  * }
+  * type Ship : Node { id: ID! name: String }
   *
-  * type ShipEdge {
-  *   cursor: String!
-  *   node: Ship
-  * }
+  * type ShipConnection { edges: [ShipEdge] pageInfo: PageInfo! }
   *
-  * type PageInfo {
-  *   hasNextPage: Boolean!
-  *   hasPreviousPage: Boolean!
-  *   startCursor: String
-  *   endCursor: String
-  * }
+  * type ShipEdge { cursor: String! node: Ship }
   *
-  * type Query {
-  *   rebels: Faction
-  *   empire: Faction
-  *   node(id: ID!): Node
-  * }
+  * type PageInfo { hasNextPage: Boolean! hasPreviousPage: Boolean! startCursor: String endCursor:
+  * String }
   *
-  * input IntroduceShipInput {
-  *   clientMutationId: string
-  *   shipName: string!
-  *   factionId: ID!
-  * }
+  * type Query { rebels: Faction empire: Faction node(id: ID!): Node }
   *
-  * input IntroduceShipPayload {
-  *   clientMutationId: string
-  *   ship: Ship
-  *   faction: Faction
-  * }
+  * input IntroduceShipInput { clientMutationId: string shipName: string! factionId: ID! }
   *
-  * type Mutation {
-  *   introduceShip(input IntroduceShipInput!): IntroduceShipPayload
-  * }
+  * input IntroduceShipPayload { clientMutationId: string ship: Ship faction: Faction }
+  *
+  * type Mutation { introduceShip(input IntroduceShipInput!): IntroduceShipPayload }
   */
 object StarWarsSchema {
 
   /** We get the node interface and field from the relay library.
     *
-    * The first method is the way we resolve an ID to its object. The second is the
-    * way we resolve an object that implements node to its type.
+    * The first method is the way we resolve an ID to its object. The second is the way we resolve
+    * an object that implements node to its type.
     */
   val NodeDefinition(nodeInterface, nodeField, nodesField) = Node.definition(
     (id: GlobalId, ctx: Context[ShipRepo, Unit]) =>
@@ -98,11 +63,8 @@ object StarWarsSchema {
 
   /** We define our basic ship type.
     *
-    * This implements the following type system shorthand:
-    *   type Ship : Node {
-    *     id: String!
-    *     name: String
-    *   }
+    * This implements the following type system shorthand: type Ship : Node { id: String! name:
+    * String }
     */
   val ShipType: ObjectType[Unit, Ship] = ObjectType(
     "Ship",
@@ -119,30 +81,19 @@ object StarWarsSchema {
 
   /** We define a connection between a faction and its ships.
     *
-    * connectionType implements the following type system shorthand:
-    *   type ShipConnection {
-    *     edges: [ShipEdge]
-    *     pageInfo: PageInfo!
-    *   }
+    * connectionType implements the following type system shorthand: type ShipConnection { edges:
+    * [ShipEdge] pageInfo: PageInfo! }
     *
-    * connectionType has an edges field - a list of edgeTypes that implement the
-    * following type system shorthand:
-    *   type ShipEdge {
-    *     cursor: String!
-    *     node: Ship
-    *   }
+    * connectionType has an edges field - a list of edgeTypes that implement the following type
+    * system shorthand: type ShipEdge { cursor: String! node: Ship }
     */
   val ConnectionDefinition(_, shipConnection) =
     Connection.definition[ShipRepo, Connection, Option[Ship]]("Ship", OptionType(ShipType))
 
   /** We define our faction type, which implements the node interface.
     *
-    * This implements the following type system shorthand:
-    *   type Faction : Node {
-    *     id: String!
-    *     name: String
-    *     ships: ShipConnection
-    *   }
+    * This implements the following type system shorthand: type Faction : Node { id: String! name:
+    * String ships: ShipConnection }
     */
   val FactionType: ObjectType[ShipRepo, Faction] = ObjectType(
     "Faction",
@@ -165,15 +116,10 @@ object StarWarsSchema {
     )
   )
 
-  /** This is the type that will be the root of our query, and the
-    * entry point into our schema.
+  /** This is the type that will be the root of our query, and the entry point into our schema.
     *
-    * This implements the following type system shorthand:
-    *   type Query {
-    *     rebels: Faction
-    *     empire: Faction
-    *     node(id: String!): Node
-    *   }
+    * This implements the following type system shorthand: type Query { rebels: Faction empire:
+    * Faction node(id: String!): Node }
     */
   val QueryType = ObjectType(
     "Query",
@@ -190,21 +136,12 @@ object StarWarsSchema {
       factionId: String)
       extends Mutation
 
-  /** This will return a `Field` for our ship
-    * mutation.
+  /** This will return a `Field` for our ship mutation.
     *
-    * It creates these two types implicitly:
-    *   input IntroduceShipInput {
-    *     clientMutationId: string
-    *     shipName: string!
-    *     factionId: ID!
-    *   }
+    * It creates these two types implicitly: input IntroduceShipInput { clientMutationId: string
+    * shipName: string! factionId: ID! }
     *
-    *   input IntroduceShipPayload {
-    *     clientMutationId: string
-    *     ship: Ship
-    *     faction: Faction
-    *   }
+    * input IntroduceShipPayload { clientMutationId: string ship: Ship faction: Faction }
     */
   val shipMutation = Mutation
     .fieldWithClientMutationId[ShipRepo, Unit, ShipMutationPayload, InputObjectType.DefaultInput](
@@ -230,13 +167,11 @@ object StarWarsSchema {
       }
     )
 
-  /** This is the type that will be the root of our mutations, and the
-    * entry point into performing writes in our schema.
+  /** This is the type that will be the root of our mutations, and the entry point into performing
+    * writes in our schema.
     *
-    * This implements the following type system shorthand:
-    *   type Mutation {
-    *     introduceShip(input IntroduceShipInput!): IntroduceShipPayload
-    *   }
+    * This implements the following type system shorthand: type Mutation { introduceShip(input
+    * IntroduceShipInput!): IntroduceShipPayload }
     */
   val MutationType = ObjectType("Mutation", fields[ShipRepo, Unit](shipMutation))
 
