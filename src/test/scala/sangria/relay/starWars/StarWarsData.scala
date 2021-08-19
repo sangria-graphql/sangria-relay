@@ -6,9 +6,8 @@ import sangria.relay.{Identifiable, Node}
 
 /** This defines a basic set of data for our Star Wars Schema.
   *
-  * This data is hard coded for the sake of the demo, but you could imagine
-  * fetching this data from a backend service rather than from hardcoded
-  * JSON objects in a more complex demo.
+  * This data is hard coded for the sake of the demo, but you could imagine fetching this data from
+  * a backend service rather than from hardcoded JSON objects in a more complex demo.
   */
 object StarWarsData {
   case class Ship(id: String, name: String) extends Node
