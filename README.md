@@ -1,4 +1,4 @@
-![Scagria Relay Support](https://raw.githubusercontent.com/sangria-graphql/sangria-logo/master/sangria-relay-logo.png)
+![Sangria Relay Support](https://raw.githubusercontent.com/sangria-graphql/sangria-logo/master/sangria-relay-logo.png)
 
 **sangria-relay** is a library to help construct a sangria server supporting [React Relay](https://relay.dev/). [Sangria](https://sangria-graphql.github.io/) is a scala [GraphQL](http://facebook.github.io/graphql/) library.
 
