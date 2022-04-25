@@ -20,7 +20,7 @@ javacOptions ++= Seq("-source", "8", "-target", "8")
 
 libraryDependencies ++= Seq(
   "org.sangria-graphql" %% "sangria" % "3.0.0",
-  "org.scalatest" %% "scalatest" % "3.2.11" % Test)
+  "org.scalatest" %% "scalatest" % "3.2.12" % Test)
 
 // Publishing
 ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
