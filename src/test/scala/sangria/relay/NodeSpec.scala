@@ -248,9 +248,9 @@ class NodeSpec extends AnyWordSpec with Matchers with AwaitSupport with ResultHe
           .getProp("__schema")
           .getProp("types")
           .asList
-          .map(_.getProp("name")) should (contain("Node")
+          .map(_.getProp("name")) should contain("Node")
           .and(contain("User"))
-          .and(contain("Photo")))
+          .and(contain("Photo"))
       }
 
       "Has correct node interface" in {
