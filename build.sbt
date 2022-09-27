@@ -8,7 +8,7 @@ licenses := Seq(
   "Apache License, ASL Version 2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0"))
 
 // sbt-github-actions needs configuration in `ThisBuild`
-ThisBuild / crossScalaVersions := Seq("2.12.16", "2.13.8")
+ThisBuild / crossScalaVersions := Seq("2.12.17", "2.13.8")
 ThisBuild / scalaVersion := crossScalaVersions.value.last
 ThisBuild / githubWorkflowBuildPreamble ++= List(
   WorkflowStep.Sbt(List("mimaReportBinaryIssues"), name = Some("Check binary compatibility")),
@@ -19,8 +19,8 @@ scalacOptions ++= Seq("-deprecation", "-feature", "-target:jvm-1.8")
 javacOptions ++= Seq("-source", "8", "-target", "8")
 
 libraryDependencies ++= Seq(
-  "org.sangria-graphql" %% "sangria" % "3.0.1",
-  "org.scalatest" %% "scalatest" % "3.2.12" % Test)
+  "org.sangria-graphql" %% "sangria" % "3.2.0",
+  "org.scalatest" %% "scalatest" % "3.2.13" % Test)
 
 // Publishing
 ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
