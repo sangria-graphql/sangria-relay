@@ -41,11 +41,12 @@ ThisBuild / githubWorkflowPublish := Seq(
 
 startYear := Some(2015)
 organizationHomepage := Some(url("https://github.com/sangria-graphql"))
-developers := Developer(
-  "OlegIlyenko",
-  "Oleg Ilyenko",
-  "",
-  url("https://github.com/OlegIlyenko")) :: Nil
+developers :=
+  Developer("OlegIlyenko", "Oleg Ilyenko", "", url("https://github.com/OlegIlyenko")) ::
+    Developer("yanns", "Yann Simon", "", url("https://github.com/yanns")) ::
+    Developer("nickhudkins", "Nick Hudkins", "", url("https://github.com/nickhudkins")) ::
+    Developer("sh0hei", "Shohei Shimomura", "", url("https://github.com/sh0hei")) ::
+    Nil
 scmInfo := Some(
   ScmInfo(
     browseUrl = url("https://github.com/sangria-graphql/sangria-relay"),
