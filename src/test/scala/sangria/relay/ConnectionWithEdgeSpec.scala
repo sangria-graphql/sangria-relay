@@ -59,7 +59,7 @@ class ConnectionWithEdgeSpec extends AnyWordSpec with Matchers with AwaitSupport
   val UserType: ObjectType[Repo, User] = ObjectType(
     "User",
     () =>
-      fields(
+      fields[Repo, User](
         Field("id", StringType, resolve = _.value.id),
         Field("name", StringType, resolve = _.value.name)
       ))
@@ -67,7 +67,7 @@ class ConnectionWithEdgeSpec extends AnyWordSpec with Matchers with AwaitSupport
   val AccountType: ObjectType[Repo, Account] = ObjectType(
     "Account",
     () =>
-      fields(
+      fields[Repo, Account](
         Field("id", StringType, resolve = _.value.id),
         Field("number", StringType, resolve = _.value.number),
         Field(
@@ -94,7 +94,7 @@ class ConnectionWithEdgeSpec extends AnyWordSpec with Matchers with AwaitSupport
   val RoleType: ObjectType[Repo, Role] = ObjectType(
     "Role",
     () =>
-      fields(
+      fields[Repo, Role](
         Field("id", StringType, resolve = _.value.id),
         Field("display", StringType, resolve = _.value.display)
       ))

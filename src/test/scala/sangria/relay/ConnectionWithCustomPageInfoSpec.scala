@@ -26,7 +26,8 @@ class ConnectionWithCustomPageInfoSpec extends AnyWordSpec with Matchers with Aw
     */
   case class CustomConnection[T](pageInfo: CustomPageInfo, edges: Seq[Edge[T]])
 
-  implicit def customConnectionLike[T] =
+  implicit
+  def customConnectionLike[T]: ConnectionLike[CustomConnection, CustomPageInfo, T, Edge[T]] =
     new ConnectionLike[CustomConnection, CustomPageInfo, T, Edge[T]] {
       override def pageInfo(conn: CustomConnection[T]): CustomPageInfo = conn.pageInfo
       override def edges(conn: CustomConnection[T]): Seq[Edge[T]] = conn.edges
@@ -74,7 +75,7 @@ class ConnectionWithCustomPageInfoSpec extends AnyWordSpec with Matchers with Aw
   val TaskType: ObjectType[Repo, Task] = ObjectType(
     "Task",
     () =>
-      fields(
+      fields[Repo, Task](
         Field("id", StringType, resolve = _.value.id),
         Field("userId", StringType, resolve = _.value.userId),
         Field("description", StringType, resolve = _.value.description)
@@ -85,7 +86,7 @@ class ConnectionWithCustomPageInfoSpec extends AnyWordSpec with Matchers with Aw
     ObjectType(
       "CustomPageInfo",
       () =>
-        fields(
+        fields[Repo, CustomPageInfo](
           Field(
             "hasNextPage",
             BooleanType,
@@ -118,7 +119,7 @@ class ConnectionWithCustomPageInfoSpec extends AnyWordSpec with Matchers with Aw
     Connection.definitionWithEdge[Repo, CustomPageInfo, CustomConnection, Task, Edge[Task]](
       name = "Task",
       nodeType = TaskType,
-      pageInfoType = customPageInfoType
+      pageInfoType = Some(customPageInfoType)
     )
 
   private object Args {
@@ -129,7 +130,7 @@ class ConnectionWithCustomPageInfoSpec extends AnyWordSpec with Matchers with Aw
   val UserType: ObjectType[Repo, User] = ObjectType(
     "User",
     () =>
-      fields(
+      fields[Repo, User](
         Field("id", StringType, resolve = _.value.id),
         Field("name", StringType, resolve = _.value.name),
         Field(
