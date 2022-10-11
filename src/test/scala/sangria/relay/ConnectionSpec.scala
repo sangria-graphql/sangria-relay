@@ -54,7 +54,7 @@ class ConnectionSpec extends AnyWordSpec with Matchers with AwaitSupport {
   val UserType: ObjectType[Repo, User] = ObjectType(
     "User",
     () =>
-      fields(
+      fields[Repo, User](
         Field("name", OptionType(StringType), resolve = _.value.name),
         Field(
           "pets",
@@ -170,13 +170,15 @@ class ConnectionSpec extends AnyWordSpec with Matchers with AwaitSupport {
     }
 
     "Not allow list node type" in {
-      an[IllegalArgumentException] should be thrownBy
-        Connection.definition[Repo, Connection, Seq[Pet]]("Pet", ListType(PetType))
+      assertTypeError("""
+        |Connection.definition[Repo, Connection, Seq[Pet]]("Pet", ListType(PetType))
+        |""".stripMargin)
 
-      an[IllegalArgumentException] should be thrownBy
-        Connection.definition[Repo, Connection, Option[Seq[Pet]]](
-          "Pet",
-          OptionType(ListType(PetType)))
+      assertTypeError("""
+        |Connection.definition[Repo, Connection, Option[Seq[Pet]]](
+        |          "Pet",
+        |          OptionType(ListType(PetType)))
+        |""".stripMargin)
     }
   }
 }

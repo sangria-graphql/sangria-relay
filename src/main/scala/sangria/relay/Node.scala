@@ -15,7 +15,8 @@ trait Node {
 }
 
 object Node {
-  implicit def identifiableNodeType[Ctx, T](implicit ev: IdentifiableNode[Ctx, T]) =
+  implicit def identifiableNodeType[Ctx, T](implicit
+      ev: IdentifiableNode[Ctx, T]): PossibleType[Node, T] =
     PossibleType.create[Node, T]
 
   val GlobalIdFieldName = "id"

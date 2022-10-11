@@ -4,7 +4,7 @@ import sangria.execution.UserFacingError
 import sangria.relay.util.Base64
 import sangria.schema._
 
-import scala.annotation.implicitNotFound
+import scala.annotation.{implicitNotFound, tailrec}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
 import scala.reflect.ClassTag
@@ -25,6 +25,7 @@ object Connection {
     val All = Before :: After :: First :: Last :: Nil
   }
 
+  @tailrec
   def isValidNodeType[Val](nodeType: OutputType[Val]): Boolean = nodeType match {
     case _: ScalarType[_] | _: EnumType[_] | _: CompositeType[_] => true
     case OptionType(ofType) => isValidNodeType(ofType)
@@ -36,7 +37,9 @@ object Connection {
       nodeType: OutputType[Val],
       edgeFields: => List[Field[Ctx, Edge[Val]]] = Nil,
       connectionFields: => List[Field[Ctx, Conn[Val]]] = Nil
-  )(implicit connEv: ConnectionLike[Conn, PageInfo, Val, Edge[Val]], classEv: ClassTag[Conn[Val]]) =
+  )(implicit
+      connEv: ConnectionLike[Conn, PageInfo, Val, Edge[Val]],
+      classEv: ClassTag[Conn[Val]]): ConnectionDefinition[Ctx, Conn[Val], Val, Edge[Val]] =
     definitionWithEdge[Ctx, DefaultPageInfo, Conn, Val, Edge[Val]](
       name,
       nodeType,
@@ -48,7 +51,7 @@ object Connection {
       nodeType: OutputType[Val],
       edgeFields: => List[Field[Ctx, E]] = Nil,
       connectionFields: => List[Field[Ctx, Conn[Val]]] = Nil,
-      pageInfoType: OutputType[P] = DefaultPageInfo.pageInfoType
+      pageInfoType: Option[OutputType[P]] = None
   )(implicit
       connEv: ConnectionLike[Conn, P, Val, E],
       classEv: ClassTag[Conn[Val]],
@@ -80,9 +83,10 @@ object Connection {
         List[Field[Ctx, Conn[Val]]](
           Field(
             "pageInfo",
-            pageInfoType,
+            pageInfoType.getOrElse(DefaultPageInfo.pageInfoType[Ctx, P]),
             Some("Information to aid in pagination."),
-            resolve = ctx => connEv.pageInfo(ctx.value)),
+            resolve = ctx => connEv.pageInfo(ctx.value)
+          ),
           Field(
             "edges",
             OptionType(ListType(OptionType(edgeType))),
@@ -208,7 +212,7 @@ case class DefaultPageInfo(
 
 object DefaultPageInfo {
   def pageInfoType[Ctx, P <: PageInfo: ClassTag]: ObjectType[Ctx, P] =
-    ObjectType(
+    ObjectType[Ctx, P](
       "PageInfo",
       "Information about pagination in a connection.",
       () =>
