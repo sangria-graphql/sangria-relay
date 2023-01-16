@@ -75,7 +75,7 @@ class MutationSpec extends AnyWordSpec with Matchers with AwaitSupport with Resu
           }
           .await
 
-        result.getProp("data").asAnyRef should equal(null)
+        result.asMap.keySet should not contain "data"
 
         val errors = result.getProp("errors").asList
 
