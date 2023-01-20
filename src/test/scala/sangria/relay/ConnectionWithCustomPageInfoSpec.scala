@@ -26,8 +26,8 @@ class ConnectionWithCustomPageInfoSpec extends AnyWordSpec with Matchers with Aw
     */
   case class CustomConnection[T](pageInfo: CustomPageInfo, edges: Seq[Edge[T]])
 
-  implicit
-  def customConnectionLike[T]: ConnectionLike[CustomConnection, CustomPageInfo, T, Edge[T]] =
+  implicit def customConnectionLike[T]
+      : ConnectionLike[CustomConnection, CustomPageInfo, T, Edge[T]] =
     new ConnectionLike[CustomConnection, CustomPageInfo, T, Edge[T]] {
       override def pageInfo(conn: CustomConnection[T]): CustomPageInfo = conn.pageInfo
       override def edges(conn: CustomConnection[T]): Seq[Edge[T]] = conn.edges
