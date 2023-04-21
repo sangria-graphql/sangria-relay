@@ -12,23 +12,29 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
 
   import Connection.{connectionFromFutureSeq, connectionFromSeq, cursorForObjectInConnection}
 
+  private val CursorOfA = "YXJyYXljb25uZWN0aW9uOjA="
+  private val CursorOfB = "YXJyYXljb25uZWN0aW9uOjE="
+  private val CursorOfC = "YXJyYXljb25uZWN0aW9uOjI="
+  private val CursorOfD = "YXJyYXljb25uZWN0aW9uOjM="
+  private val CursorOfE = "YXJyYXljb25uZWN0aW9uOjQ="
+
   "connectionFromSeq" when {
     "Handles basic slicing" should {
       "Returns all elements without filters" in {
         connectionFromSeq(Letters, ConnectionArgs.empty) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjA="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjQ="),
+              startCursor = Some(CursorOfA),
+              endCursor = Some(CursorOfE),
               hasPreviousPage = false,
               hasNextPage = false
             ),
             List(
-              Edge("A", "YXJyYXljb25uZWN0aW9uOjA="),
-              Edge("B", "YXJyYXljb25uZWN0aW9uOjE="),
-              Edge("C", "YXJyYXljb25uZWN0aW9uOjI="),
-              Edge("D", "YXJyYXljb25uZWN0aW9uOjM="),
-              Edge("E", "YXJyYXljb25uZWN0aW9uOjQ=")
+              Edge("A", CursorOfA),
+              Edge("B", CursorOfB),
+              Edge("C", CursorOfC),
+              Edge("D", CursorOfD),
+              Edge("E", CursorOfE)
             )
           ))
       }
@@ -37,12 +43,12 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
         connectionFromSeq(Letters, ConnectionArgs(first = Some(2))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjA="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjE="),
+              startCursor = Some(CursorOfA),
+              endCursor = Some(CursorOfB),
               hasPreviousPage = false,
               hasNextPage = true
             ),
-            List(Edge("A", "YXJyYXljb25uZWN0aW9uOjA="), Edge("B", "YXJyYXljb25uZWN0aW9uOjE="))
+            List(Edge("A", CursorOfA), Edge("B", CursorOfB))
           ))
       }
 
@@ -50,17 +56,17 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
         connectionFromSeq(Letters, ConnectionArgs(first = Some(10))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjA="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjQ="),
+              startCursor = Some(CursorOfA),
+              endCursor = Some(CursorOfE),
               hasPreviousPage = false,
               hasNextPage = false
             ),
             List(
-              Edge("A", "YXJyYXljb25uZWN0aW9uOjA="),
-              Edge("B", "YXJyYXljb25uZWN0aW9uOjE="),
-              Edge("C", "YXJyYXljb25uZWN0aW9uOjI="),
-              Edge("D", "YXJyYXljb25uZWN0aW9uOjM="),
-              Edge("E", "YXJyYXljb25uZWN0aW9uOjQ=")
+              Edge("A", CursorOfA),
+              Edge("B", CursorOfB),
+              Edge("C", CursorOfC),
+              Edge("D", CursorOfD),
+              Edge("E", CursorOfE)
             )
           ))
       }
@@ -69,12 +75,12 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
         connectionFromSeq(Letters, ConnectionArgs(last = Some(2))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjM="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjQ="),
+              startCursor = Some(CursorOfD),
+              endCursor = Some(CursorOfE),
               hasPreviousPage = true,
               hasNextPage = false
             ),
-            List(Edge("D", "YXJyYXljb25uZWN0aW9uOjM="), Edge("E", "YXJyYXljb25uZWN0aW9uOjQ="))
+            List(Edge("D", CursorOfD), Edge("E", CursorOfE))
           ))
       }
 
@@ -82,17 +88,17 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
         connectionFromSeq(Letters, ConnectionArgs(last = Some(10))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjA="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjQ="),
+              startCursor = Some(CursorOfA),
+              endCursor = Some(CursorOfE),
               hasPreviousPage = false,
               hasNextPage = false
             ),
             List(
-              Edge("A", "YXJyYXljb25uZWN0aW9uOjA="),
-              Edge("B", "YXJyYXljb25uZWN0aW9uOjE="),
-              Edge("C", "YXJyYXljb25uZWN0aW9uOjI="),
-              Edge("D", "YXJyYXljb25uZWN0aW9uOjM="),
-              Edge("E", "YXJyYXljb25uZWN0aW9uOjQ=")
+              Edge("A", CursorOfA),
+              Edge("B", CursorOfB),
+              Edge("C", CursorOfC),
+              Edge("D", CursorOfD),
+              Edge("E", CursorOfE)
             )
           ))
       }
@@ -102,66 +108,60 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
       "Respects first and after" in {
         connectionFromSeq(
           Letters,
-          ConnectionArgs(first = Some(2), after = Some("YXJyYXljb25uZWN0aW9uOjE="))) should be(
+          ConnectionArgs(first = Some(2), after = Some(CursorOfB))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjI="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjM="),
-              hasPreviousPage = false,
+              startCursor = Some(CursorOfC),
+              endCursor = Some(CursorOfD),
+              hasPreviousPage = true, // A and B are previous
               hasNextPage = true
             ),
-            List(Edge("C", "YXJyYXljb25uZWN0aW9uOjI="), Edge("D", "YXJyYXljb25uZWN0aW9uOjM="))
+            List(Edge("C", CursorOfC), Edge("D", CursorOfD))
           ))
       }
 
       "Respects first and after with long first" in {
         connectionFromSeq(
           Letters,
-          ConnectionArgs(first = Some(10), after = Some("YXJyYXljb25uZWN0aW9uOjE="))) should be(
+          ConnectionArgs(first = Some(10), after = Some(CursorOfB))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjI="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjQ="),
-              hasPreviousPage = false,
+              startCursor = Some(CursorOfC),
+              endCursor = Some(CursorOfE),
+              hasPreviousPage = true, // A and B are previous
               hasNextPage = false
             ),
-            List(
-              Edge("C", "YXJyYXljb25uZWN0aW9uOjI="),
-              Edge("D", "YXJyYXljb25uZWN0aW9uOjM="),
-              Edge("E", "YXJyYXljb25uZWN0aW9uOjQ="))
+            List(Edge("C", CursorOfC), Edge("D", CursorOfD), Edge("E", CursorOfE))
           ))
       }
 
       "Respects last and before" in {
         connectionFromSeq(
           Letters,
-          ConnectionArgs(last = Some(2), before = Some("YXJyYXljb25uZWN0aW9uOjM="))) should be(
+          ConnectionArgs(last = Some(2), before = Some(CursorOfD))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjE="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjI="),
+              startCursor = Some(CursorOfB),
+              endCursor = Some(CursorOfC),
               hasPreviousPage = true,
-              hasNextPage = false
+              hasNextPage = true // D and E are next
             ),
-            List(Edge("B", "YXJyYXljb25uZWN0aW9uOjE="), Edge("C", "YXJyYXljb25uZWN0aW9uOjI="))
+            List(Edge("B", CursorOfB), Edge("C", CursorOfC))
           ))
       }
 
       "Respects last and before with long last" in {
         connectionFromSeq(
           Letters,
-          ConnectionArgs(last = Some(10), before = Some("YXJyYXljb25uZWN0aW9uOjM="))) should be(
+          ConnectionArgs(last = Some(10), before = Some(CursorOfD))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjA="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjI="),
+              startCursor = Some(CursorOfA),
+              endCursor = Some(CursorOfC),
               hasPreviousPage = false,
-              hasNextPage = false
+              hasNextPage = true // D and E are next
             ),
-            List(
-              Edge("A", "YXJyYXljb25uZWN0aW9uOjA="),
-              Edge("B", "YXJyYXljb25uZWN0aW9uOjE="),
-              Edge("C", "YXJyYXljb25uZWN0aW9uOjI="))
+            List(Edge("A", CursorOfA), Edge("B", CursorOfB), Edge("C", CursorOfC))
           ))
       }
 
@@ -170,16 +170,16 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
           Letters,
           ConnectionArgs(
             first = Some(2),
-            after = Some("YXJyYXljb25uZWN0aW9uOjA="),
-            before = Some("YXJyYXljb25uZWN0aW9uOjQ="))) should be(
+            after = Some(CursorOfA),
+            before = Some(CursorOfE))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjE="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjI="),
-              hasPreviousPage = false,
+              startCursor = Some(CursorOfB),
+              endCursor = Some(CursorOfC),
+              hasPreviousPage = true, // A is previous
               hasNextPage = true
             ),
-            List(Edge("B", "YXJyYXljb25uZWN0aW9uOjE="), Edge("C", "YXJyYXljb25uZWN0aW9uOjI="))
+            List(Edge("B", CursorOfB), Edge("C", CursorOfC))
           ))
       }
 
@@ -188,19 +188,20 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
           Letters,
           ConnectionArgs(
             first = Some(4),
-            after = Some("YXJyYXljb25uZWN0aW9uOjA="),
-            before = Some("YXJyYXljb25uZWN0aW9uOjQ="))) should be(
+            after = Some(CursorOfA),
+            before = Some(CursorOfE))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjE="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjM="),
-              hasPreviousPage = false,
+              startCursor = Some(CursorOfB),
+              endCursor = Some(CursorOfD),
+              hasPreviousPage = true, // A is previous
+              // `hasNextPage=false` because the spec says:
+              // "If first is set: [...] If edges contains more than first elements return true, otherwise false."
+              // and after the cursors have been applied, the array contains 3 elements <= first (4)
+              // https://relay.dev/graphql/connections.htm#sec-undefined.PageInfo
               hasNextPage = false
             ),
-            List(
-              Edge("B", "YXJyYXljb25uZWN0aW9uOjE="),
-              Edge("C", "YXJyYXljb25uZWN0aW9uOjI="),
-              Edge("D", "YXJyYXljb25uZWN0aW9uOjM="))
+            List(Edge("B", CursorOfB), Edge("C", CursorOfC), Edge("D", CursorOfD))
           ))
       }
 
@@ -209,19 +210,20 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
           Letters,
           ConnectionArgs(
             first = Some(3),
-            after = Some("YXJyYXljb25uZWN0aW9uOjA="),
-            before = Some("YXJyYXljb25uZWN0aW9uOjQ="))) should be(
+            after = Some(CursorOfA),
+            before = Some(CursorOfE))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjE="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjM="),
-              hasPreviousPage = false,
+              startCursor = Some(CursorOfB),
+              endCursor = Some(CursorOfD),
+              hasPreviousPage = true,
+              // `hasNextPage=false` because the spec says:
+              // "If first is set: [...] If edges contains more than first elements return true, otherwise false."
+              // and after the cursors have been applied, the array contains 3 elements <= first (3)
+              // https://relay.dev/graphql/connections.htm#sec-undefined.PageInfo
               hasNextPage = false
             ),
-            List(
-              Edge("B", "YXJyYXljb25uZWN0aW9uOjE="),
-              Edge("C", "YXJyYXljb25uZWN0aW9uOjI="),
-              Edge("D", "YXJyYXljb25uZWN0aW9uOjM="))
+            List(Edge("B", CursorOfB), Edge("C", CursorOfC), Edge("D", CursorOfD))
           ))
       }
 
@@ -230,16 +232,16 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
           Letters,
           ConnectionArgs(
             last = Some(2),
-            after = Some("YXJyYXljb25uZWN0aW9uOjA="),
-            before = Some("YXJyYXljb25uZWN0aW9uOjQ="))) should be(
+            after = Some(CursorOfA),
+            before = Some(CursorOfE))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjI="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjM="),
+              startCursor = Some(CursorOfC),
+              endCursor = Some(CursorOfD),
               hasPreviousPage = true,
-              hasNextPage = false
+              hasNextPage = true
             ),
-            List(Edge("C", "YXJyYXljb25uZWN0aW9uOjI="), Edge("D", "YXJyYXljb25uZWN0aW9uOjM="))
+            List(Edge("C", CursorOfC), Edge("D", CursorOfD))
           ))
       }
 
@@ -248,19 +250,19 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
           Letters,
           ConnectionArgs(
             last = Some(10),
-            after = Some("YXJyYXljb25uZWN0aW9uOjA="),
-            before = Some("YXJyYXljb25uZWN0aW9uOjQ="))) should be(
+            after = Some(CursorOfA),
+            before = Some(CursorOfE))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjE="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjM="),
+              startCursor = Some(CursorOfB),
+              endCursor = Some(CursorOfD),
+              // `hasPreviousPage=false` because the spec says:
+              // "If last is set: [...] If edges contains more than last elements return true, otherwise false."
+              // and after the cursors have been applied, the array contains 3 elements <= last (4)
               hasPreviousPage = false,
-              hasNextPage = false
+              hasNextPage = true
             ),
-            List(
-              Edge("B", "YXJyYXljb25uZWN0aW9uOjE="),
-              Edge("C", "YXJyYXljb25uZWN0aW9uOjI="),
-              Edge("D", "YXJyYXljb25uZWN0aW9uOjM="))
+            List(Edge("B", CursorOfB), Edge("C", CursorOfC), Edge("D", CursorOfD))
           ))
       }
 
@@ -269,19 +271,19 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
           Letters,
           ConnectionArgs(
             last = Some(3),
-            after = Some("YXJyYXljb25uZWN0aW9uOjA="),
-            before = Some("YXJyYXljb25uZWN0aW9uOjQ="))) should be(
+            after = Some(CursorOfA),
+            before = Some(CursorOfE))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjE="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjM="),
+              startCursor = Some(CursorOfB),
+              endCursor = Some(CursorOfD),
+              // `hasPreviousPage=false` because the spec says:
+              // "If last is set: [...] If edges contains more than last elements return true, otherwise false."
+              // and after the cursors have been applied, the array contains 3 elements <= last (3)
               hasPreviousPage = false,
-              hasNextPage = false
+              hasNextPage = true
             ),
-            List(
-              Edge("B", "YXJyYXljb25uZWN0aW9uOjE="),
-              Edge("C", "YXJyYXljb25uZWN0aW9uOjI="),
-              Edge("D", "YXJyYXljb25uZWN0aW9uOjM="))
+            List(Edge("B", CursorOfB), Edge("C", CursorOfC), Edge("D", CursorOfD))
           ))
       }
     }
@@ -308,17 +310,17 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
           ConnectionArgs(after = Some("invalid"), before = Some("invalid"))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjA="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjQ="),
+              startCursor = Some(CursorOfA),
+              endCursor = Some(CursorOfE),
               hasPreviousPage = false,
               hasNextPage = false
             ),
             List(
-              Edge("A", "YXJyYXljb25uZWN0aW9uOjA="),
-              Edge("B", "YXJyYXljb25uZWN0aW9uOjE="),
-              Edge("C", "YXJyYXljb25uZWN0aW9uOjI="),
-              Edge("D", "YXJyYXljb25uZWN0aW9uOjM="),
-              Edge("E", "YXJyYXljb25uZWN0aW9uOjQ=")
+              Edge("A", CursorOfA),
+              Edge("B", CursorOfB),
+              Edge("C", CursorOfC),
+              Edge("D", CursorOfD),
+              Edge("E", CursorOfE)
             )
           ))
       }
@@ -331,27 +333,27 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
             before = Some("YXJyYXljb25uZWN0aW9uOjYK"))) should be(
           DefaultConnection(
             PageInfo(
-              startCursor = Some("YXJyYXljb25uZWN0aW9uOjA="),
-              endCursor = Some("YXJyYXljb25uZWN0aW9uOjQ="),
+              startCursor = Some(CursorOfA),
+              endCursor = Some(CursorOfE),
               hasPreviousPage = false,
               hasNextPage = false
             ),
             List(
-              Edge("A", "YXJyYXljb25uZWN0aW9uOjA="),
-              Edge("B", "YXJyYXljb25uZWN0aW9uOjE="),
-              Edge("C", "YXJyYXljb25uZWN0aW9uOjI="),
-              Edge("D", "YXJyYXljb25uZWN0aW9uOjM="),
-              Edge("E", "YXJyYXljb25uZWN0aW9uOjQ=")
+              Edge("A", CursorOfA),
+              Edge("B", CursorOfB),
+              Edge("C", CursorOfC),
+              Edge("D", CursorOfD),
+              Edge("E", CursorOfE)
             )
           ))
       }
 
       "Returns no elements if cursors cross" in {
+        val pageInfo = PageInfo(hasNextPage = true, hasPreviousPage = true)
         connectionFromSeq(
           Letters,
-          ConnectionArgs(
-            after = Some("YXJyYXljb25uZWN0aW9uOjQ="),
-            before = Some("YXJyYXljb25uZWN0aW9uOjI="))) should be(Connection.empty)
+          ConnectionArgs(after = Some(CursorOfE), before = Some(CursorOfC))) should be(
+          Connection.empty.copy(pageInfo = pageInfo))
       }
     }
   }
@@ -363,17 +365,17 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
       connectionFromFutureSeq(FutureLetters, ConnectionArgs.empty).await should be(
         DefaultConnection(
           PageInfo(
-            startCursor = Some("YXJyYXljb25uZWN0aW9uOjA="),
-            endCursor = Some("YXJyYXljb25uZWN0aW9uOjQ="),
+            startCursor = Some(CursorOfA),
+            endCursor = Some(CursorOfE),
             hasPreviousPage = false,
             hasNextPage = false
           ),
           List(
-            Edge("A", "YXJyYXljb25uZWN0aW9uOjA="),
-            Edge("B", "YXJyYXljb25uZWN0aW9uOjE="),
-            Edge("C", "YXJyYXljb25uZWN0aW9uOjI="),
-            Edge("D", "YXJyYXljb25uZWN0aW9uOjM="),
-            Edge("E", "YXJyYXljb25uZWN0aW9uOjQ=")
+            Edge("A", CursorOfA),
+            Edge("B", CursorOfB),
+            Edge("C", CursorOfC),
+            Edge("D", CursorOfD),
+            Edge("E", CursorOfE)
           )
         ))
     }
@@ -382,12 +384,12 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
       connectionFromFutureSeq(FutureLetters, ConnectionArgs(first = Some(2))).await should be(
         DefaultConnection(
           PageInfo(
-            startCursor = Some("YXJyYXljb25uZWN0aW9uOjA="),
-            endCursor = Some("YXJyYXljb25uZWN0aW9uOjE="),
+            startCursor = Some(CursorOfA),
+            endCursor = Some(CursorOfB),
             hasPreviousPage = false,
             hasNextPage = true
           ),
-          List(Edge("A", "YXJyYXljb25uZWN0aW9uOjA="), Edge("B", "YXJyYXljb25uZWN0aW9uOjE="))
+          List(Edge("A", CursorOfA), Edge("B", CursorOfB))
         ))
     }
 
@@ -398,19 +400,19 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
         SliceInfo(0, 5)).await should be(
         DefaultConnection(
           PageInfo(
-            startCursor = Some("YXJyYXljb25uZWN0aW9uOjA="),
-            endCursor = Some("YXJyYXljb25uZWN0aW9uOjE="),
+            startCursor = Some(CursorOfA),
+            endCursor = Some(CursorOfB),
             hasPreviousPage = false,
             hasNextPage = true
           ),
-          List(Edge("A", "YXJyYXljb25uZWN0aW9uOjA="), Edge("B", "YXJyYXljb25uZWN0aW9uOjE="))
+          List(Edge("A", CursorOfA), Edge("B", CursorOfB))
         ))
     }
   }
 
   "cursorForObjectInConnection" should {
     "returns an edge's cursor, given an array and a member object" in {
-      cursorForObjectInConnection(Letters, "B") should be(Some("YXJyYXljb25uZWN0aW9uOjE="))
+      cursorForObjectInConnection(Letters, "B") should be(Some(CursorOfB))
     }
 
     "returns null, given an array and a non-member object" in {
@@ -421,113 +423,113 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
   "connectionFromSeq (with slice)" should {
     "works with a just-right array slice" in {
       connectionFromSeq(
-        Letters.slice(1, 3),
-        ConnectionArgs(first = Some(2), after = Some("YXJyYXljb25uZWN0aW9uOjA=")),
-        SliceInfo(1, 5)) should be(
+        arraySlice = Letters.slice(1, 3),
+        args = ConnectionArgs(first = Some(2), after = Some(CursorOfA)),
+        sliceInfo = SliceInfo(1, 5)) should be(
         DefaultConnection(
           PageInfo(
-            startCursor = Some("YXJyYXljb25uZWN0aW9uOjE="),
-            endCursor = Some("YXJyYXljb25uZWN0aW9uOjI="),
-            hasPreviousPage = false,
+            startCursor = Some(CursorOfB),
+            endCursor = Some(CursorOfC),
+            hasPreviousPage = true, // A is previous
             hasNextPage = true
           ),
-          List(Edge("B", "YXJyYXljb25uZWN0aW9uOjE="), Edge("C", "YXJyYXljb25uZWN0aW9uOjI="))
+          List(Edge("B", CursorOfB), Edge("C", CursorOfC))
         ))
     }
 
     "works with an oversized array slice (left side)" in {
       connectionFromSeq(
-        Letters.slice(0, 3),
-        ConnectionArgs(first = Some(2), after = Some("YXJyYXljb25uZWN0aW9uOjA=")),
-        SliceInfo(0, 5)) should be(
+        arraySlice = Letters.slice(0, 3), // A, B, C
+        args = ConnectionArgs(first = Some(2), after = Some(CursorOfA)),
+        sliceInfo = SliceInfo(0, 5)) should be(
         DefaultConnection(
           PageInfo(
-            startCursor = Some("YXJyYXljb25uZWN0aW9uOjE="),
-            endCursor = Some("YXJyYXljb25uZWN0aW9uOjI="),
-            hasPreviousPage = false,
+            startCursor = Some(CursorOfB),
+            endCursor = Some(CursorOfC),
+            hasPreviousPage = true, // A is previous
             hasNextPage = true
           ),
-          List(Edge("B", "YXJyYXljb25uZWN0aW9uOjE="), Edge("C", "YXJyYXljb25uZWN0aW9uOjI="))
+          List(Edge("B", CursorOfB), Edge("C", CursorOfC))
         ))
     }
 
     "works with an oversized array slice (right side)" in {
       connectionFromSeq(
-        Letters.slice(2, 4),
-        ConnectionArgs(first = Some(1), after = Some("YXJyYXljb25uZWN0aW9uOjE=")),
-        SliceInfo(2, 5)) should be(
+        arraySlice = Letters.slice(2, 4), // C, D
+        args = ConnectionArgs(first = Some(1), after = Some(CursorOfB)),
+        sliceInfo = SliceInfo(2, 5)) should be(
         DefaultConnection(
           PageInfo(
-            startCursor = Some("YXJyYXljb25uZWN0aW9uOjI="),
-            endCursor = Some("YXJyYXljb25uZWN0aW9uOjI="),
-            hasPreviousPage = false,
+            startCursor = Some(CursorOfC),
+            endCursor = Some(CursorOfC),
+            hasPreviousPage = true, // A and B are previous
             hasNextPage = true
           ),
-          List(Edge("C", "YXJyYXljb25uZWN0aW9uOjI="))
+          List(Edge("C", CursorOfC))
         ))
     }
 
     "works with an oversized array slice (both sides)" in {
       connectionFromSeq(
-        Letters.slice(1, 4),
-        ConnectionArgs(first = Some(1), after = Some("YXJyYXljb25uZWN0aW9uOjE=")),
+        Letters.slice(1, 4), // B, C, D
+        ConnectionArgs(first = Some(1), after = Some(CursorOfB)),
         SliceInfo(1, 5)) should be(
         DefaultConnection(
           PageInfo(
-            startCursor = Some("YXJyYXljb25uZWN0aW9uOjI="),
-            endCursor = Some("YXJyYXljb25uZWN0aW9uOjI="),
-            hasPreviousPage = false,
+            startCursor = Some(CursorOfC),
+            endCursor = Some(CursorOfC),
+            hasPreviousPage = true, // A and B are previous
             hasNextPage = true
           ),
-          List(Edge("C", "YXJyYXljb25uZWN0aW9uOjI="))
+          List(Edge("C", CursorOfC))
         ))
     }
 
     "works with an undersized array slice (left side)" in {
       connectionFromSeq(
-        Letters.slice(3, 5),
-        ConnectionArgs(first = Some(3), after = Some("YXJyYXljb25uZWN0aW9uOjE=")),
+        Letters.slice(3, 5), // D, E
+        ConnectionArgs(first = Some(3), after = Some(CursorOfB)),
         SliceInfo(3, 5)) should be(
         DefaultConnection(
           PageInfo(
-            startCursor = Some("YXJyYXljb25uZWN0aW9uOjM="),
-            endCursor = Some("YXJyYXljb25uZWN0aW9uOjQ="),
-            hasPreviousPage = false,
+            startCursor = Some(CursorOfD),
+            endCursor = Some(CursorOfE),
+            hasPreviousPage = true, // A, B, and C are previous
             hasNextPage = false
           ),
-          List(Edge("D", "YXJyYXljb25uZWN0aW9uOjM="), Edge("E", "YXJyYXljb25uZWN0aW9uOjQ="))
+          List(Edge("D", CursorOfD), Edge("E", CursorOfE))
         ))
     }
 
     "works with an undersized array slice (right side)" in {
       connectionFromSeq(
-        Letters.slice(2, 4),
-        ConnectionArgs(first = Some(3), after = Some("YXJyYXljb25uZWN0aW9uOjE=")),
+        Letters.slice(2, 4), // C, D
+        ConnectionArgs(first = Some(3), after = Some(CursorOfB)),
         SliceInfo(2, 5)) should be(
         DefaultConnection(
           PageInfo(
-            startCursor = Some("YXJyYXljb25uZWN0aW9uOjI="),
-            endCursor = Some("YXJyYXljb25uZWN0aW9uOjM="),
-            hasPreviousPage = false,
-            hasNextPage = true
+            startCursor = Some(CursorOfC),
+            endCursor = Some(CursorOfD),
+            hasPreviousPage = true,
+            hasNextPage = false
           ),
-          List(Edge("C", "YXJyYXljb25uZWN0aW9uOjI="), Edge("D", "YXJyYXljb25uZWN0aW9uOjM="))
+          List(Edge("C", CursorOfC), Edge("D", CursorOfD))
         ))
     }
 
     "works with an undersized array slice (both sides)" in {
       connectionFromSeq(
         Letters.slice(3, 4),
-        ConnectionArgs(first = Some(3), after = Some("YXJyYXljb25uZWN0aW9uOjE=")),
+        ConnectionArgs(first = Some(3), after = Some(CursorOfB)),
         SliceInfo(3, 5)) should be(
         DefaultConnection(
           PageInfo(
-            startCursor = Some("YXJyYXljb25uZWN0aW9uOjM="),
-            endCursor = Some("YXJyYXljb25uZWN0aW9uOjM="),
-            hasPreviousPage = false,
-            hasNextPage = true
+            startCursor = Some(CursorOfD),
+            endCursor = Some(CursorOfD),
+            hasPreviousPage = true,
+            hasNextPage = false
           ),
-          List(Edge("D", "YXJyYXljb25uZWN0aW9uOjM="))
+          List(Edge("D", CursorOfD))
         ))
     }
   }

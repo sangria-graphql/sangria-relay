@@ -114,11 +114,10 @@ object Connection {
     seq.map(connectionFromSeq(_, args, sliceInfo))
 
   def connectionFromSeq[T](
-      seqSlice: Seq[T],
+      arraySlice: Seq[T],
       args: ConnectionArgs,
       sliceInfo: SliceInfo): Connection[T] = {
-    import args._
-    import sliceInfo._
+    val ConnectionArgs(before, after, first, last) = args
 
     first.foreach(f =>
       if (f < 0)
@@ -127,36 +126,68 @@ object Connection {
       if (l < 0)
         throw ConnectionArgumentValidationError("Argument 'last' must be a non-negative integer"))
 
-    val sliceEnd = sliceStart + seqSlice.size
-    val beforeOffset = getOffset(before, size)
+    val SliceInfo(sliceStart, arrayLength) = sliceInfo
+
+    val sliceEnd = sliceStart + arraySlice.size
+
+    val startOffset = math.max(sliceStart, 0)
+    val endOffset = math.min(sliceEnd, arrayLength)
+
     val afterOffset = getOffset(after, -1)
+    val (firstEdgeOffset, actualStartOffset) = Option
+      .when(afterOffset >= 0 && afterOffset < arrayLength) {
+        val actualStartOffset = math.max(startOffset, afterOffset + 1)
+        val fEO = afterOffset + 1
+        fEO -> actualStartOffset
+      }
+      .getOrElse(0 -> startOffset)
 
-    val startOffset = math.max(math.max(sliceStart - 1, afterOffset), -1) + 1
-    val endOffset = math.min(math.min(sliceEnd, beforeOffset), size)
+    val beforeOffset = getOffset(before, arrayLength)
+    val (lastEdgeOffset, actualEndOffset) = Option
+      .when(0 <= beforeOffset && beforeOffset < arrayLength) {
+        val lEO = beforeOffset - 1
+        val actualEndOffset = math.min(endOffset, beforeOffset)
+        lEO -> actualEndOffset
+      }
+      .getOrElse((arrayLength - 1) -> endOffset)
 
-    val actualEndOffset = first.fold(endOffset)(f => math.min(endOffset, startOffset + f))
-    val actualStartOffset = last.fold(startOffset)(l => math.max(startOffset, actualEndOffset - l))
+    val numberEdgesAfterCursor = lastEdgeOffset - firstEdgeOffset + 1
+
+    val finalEndOffset =
+      first.map(_ + actualStartOffset).map(math.min(actualEndOffset, _)).getOrElse(actualEndOffset)
+    val finalStartOffset =
+      last.map(actualEndOffset - _).map(math.max(actualStartOffset, _)).getOrElse(actualStartOffset)
 
     // If supplied slice is too large, trim it down before mapping over it.
-    val slice = seqSlice.slice(
-      math.max(actualStartOffset - sliceStart, 0),
-      seqSlice.size - (sliceEnd - actualEndOffset))
+    val slice = arraySlice.slice(
+      math.max(finalStartOffset - sliceStart, 0),
+      arraySlice.size - (sliceEnd - finalEndOffset))
 
     val edges = slice.zipWithIndex.map { case (value, index) =>
-      Edge(value, offsetToCursor(actualStartOffset + index))
+      Edge(value, offsetToCursor(finalStartOffset + index))
     }
 
     val firstEdge = edges.headOption
     val lastEdge = edges.lastOption
-    val lowerBound = after.fold(0)(_ => afterOffset + 1)
-    val upperBound = before.fold(size)(_ => beforeOffset)
+
+    val hasPreviousPage = (last, after) match {
+      case (Some(l), _) => numberEdgesAfterCursor > l
+      case (None, Some(_)) => afterOffset >= 0
+      case (_, _) => false
+    }
+
+    val hasNextPage = (first, before) match {
+      case (Some(f), _) => numberEdgesAfterCursor > f
+      case (_, Some(_)) => beforeOffset < arrayLength
+      case (_, _) => false
+    }
 
     DefaultConnection(
       PageInfo(
+        hasNextPage,
+        hasPreviousPage,
         startCursor = firstEdge.map(_.cursor),
-        endCursor = lastEdge.map(_.cursor),
-        hasPreviousPage = last.fold(false)(_ => actualStartOffset > lowerBound),
-        hasNextPage = first.fold(false)(_ => actualEndOffset < upperBound)
+        endCursor = lastEdge.map(_.cursor)
       ),
       edges
     )
