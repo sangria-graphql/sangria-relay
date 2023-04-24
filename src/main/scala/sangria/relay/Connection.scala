@@ -134,22 +134,18 @@ object Connection {
     val endOffset = math.min(sliceEnd, arrayLength)
 
     val afterOffset = getOffset(after, -1)
-    val (firstEdgeOffset, actualStartOffset) = Option
-      .when(afterOffset >= 0 && afterOffset < arrayLength) {
-        val actualStartOffset = math.max(startOffset, afterOffset + 1)
-        val fEO = afterOffset + 1
-        fEO -> actualStartOffset
-      }
-      .getOrElse(0 -> startOffset)
+    val (firstEdgeOffset, actualStartOffset) = if (afterOffset >= 0 && afterOffset < arrayLength) {
+      val actualStartOffset = math.max(startOffset, afterOffset + 1)
+      val fEO = afterOffset + 1
+      fEO -> actualStartOffset
+    } else 0 -> startOffset
 
     val beforeOffset = getOffset(before, arrayLength)
-    val (lastEdgeOffset, actualEndOffset) = Option
-      .when(0 <= beforeOffset && beforeOffset < arrayLength) {
-        val lEO = beforeOffset - 1
-        val actualEndOffset = math.min(endOffset, beforeOffset)
-        lEO -> actualEndOffset
-      }
-      .getOrElse((arrayLength - 1) -> endOffset)
+    val (lastEdgeOffset, actualEndOffset) = if (0 <= beforeOffset && beforeOffset < arrayLength) {
+      val lEO = beforeOffset - 1
+      val actualEndOffset = math.min(endOffset, beforeOffset)
+      lEO -> actualEndOffset
+    } else (arrayLength - 1) -> endOffset
 
     val numberEdgesAfterCursor = lastEdgeOffset - firstEdgeOffset + 1
 
