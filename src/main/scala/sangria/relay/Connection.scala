@@ -150,9 +150,9 @@ object Connection {
     val numberEdgesAfterCursor = lastEdgeOffset - firstEdgeOffset + 1
 
     val finalEndOffset =
-      first.map(_ + actualStartOffset).map(math.min(actualEndOffset, _)).getOrElse(actualEndOffset)
+      first.fold(actualEndOffset)(f => math.min(actualEndOffset, f + actualStartOffset))
     val finalStartOffset =
-      last.map(actualEndOffset - _).map(math.max(actualStartOffset, _)).getOrElse(actualStartOffset)
+      last.fold(actualStartOffset)(l => math.max(actualStartOffset, actualEndOffset - l))
 
     // If supplied slice is too large, trim it down before mapping over it.
     val slice = arraySlice.slice(
