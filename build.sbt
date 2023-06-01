@@ -13,7 +13,7 @@ val isScala3 = Def.setting(
 )
 
 // sbt-github-actions needs configuration in `ThisBuild`
-ThisBuild / crossScalaVersions := Seq("2.12.17", "2.13.10", "3.2.2")
+ThisBuild / crossScalaVersions := Seq("2.12.17", "2.13.10", "3.3.0")
 ThisBuild / scalaVersion := crossScalaVersions.value.tail.head
 ThisBuild / githubWorkflowBuildPreamble ++= List(
   WorkflowStep.Sbt(List("mimaReportBinaryIssues"), name = Some("Check binary compatibility")),
