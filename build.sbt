@@ -13,7 +13,7 @@ val isScala3 = Def.setting(
 )
 
 // sbt-github-actions needs configuration in `ThisBuild`
-ThisBuild / crossScalaVersions := Seq("2.12.18", "2.13.11", "3.3.0")
+ThisBuild / crossScalaVersions := Seq("2.12.18", "2.13.12", "3.3.0")
 ThisBuild / scalaVersion := crossScalaVersions.value.tail.head
 ThisBuild / githubWorkflowBuildPreamble ++= List(
   WorkflowStep.Sbt(List("mimaReportBinaryIssues"), name = Some("Check binary compatibility")),
@@ -26,7 +26,7 @@ javacOptions ++= Seq("-source", "8", "-target", "8")
 
 libraryDependencies ++= Seq(
   "org.sangria-graphql" %% "sangria" % "4.0.1",
-  "org.scalatest" %% "scalatest" % "3.2.16" % Test)
+  "org.scalatest" %% "scalatest" % "3.2.17" % Test)
 
 mimaPreviousArtifacts := {
   if (isScala3.value) Set.empty
