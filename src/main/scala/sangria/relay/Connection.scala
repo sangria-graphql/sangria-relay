@@ -89,9 +89,10 @@ object Connection {
           ),
           Field(
             "edges",
-            OptionType(ListType(OptionType(edgeType))),
+            OptionType(ListType(edgeType)),
             Some("A list of edges."),
-            resolve = ctx => connEv.edges(ctx.value).map(Some(_)))
+            resolve = ctx => connEv.edges(ctx.value)
+          )
         ) ++ connectionFields
     )
 
