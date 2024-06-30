@@ -26,7 +26,7 @@ javacOptions ++= Seq("-source", "8", "-target", "8")
 
 libraryDependencies ++= Seq(
   "org.sangria-graphql" %% "sangria" % "4.1.0",
-  "org.scalatest" %% "scalatest" % "3.2.18" % Test)
+  "org.scalatest" %% "scalatest" % "3.2.19" % Test)
 
 mimaPreviousArtifacts := {
   if (isScala3.value) Set.empty
