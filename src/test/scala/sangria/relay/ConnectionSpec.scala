@@ -90,7 +90,8 @@ class ConnectionSpec extends AnyWordSpec with Matchers with AwaitSupport {
         "scalars",
         OptionType(scalarConnection),
         arguments = Connection.Args.All,
-        resolve = ctx => Connection.connectionFromSeq(Seq("foo", "bar"), ConnectionArgs(ctx))),
+        resolve = ctx => Connection.connectionFromSeq(Seq("foo", "bar"), ConnectionArgs(ctx))
+      ),
       Field("user", OptionType(UserType), resolve = _.ctx.Users.head)
     )
   )
@@ -134,39 +135,40 @@ class ConnectionSpec extends AnyWordSpec with Matchers with AwaitSupport {
         """)
 
       Executor.execute(schema, doc, userContext = new Repo).await should be(
-        Map("data" -> Map(
-          "scalars" -> Map("edges" -> List(Map("node" -> "bar"))),
-          "user" -> Map(
-            "friends" -> Map(
-              "totalCount" -> 5,
-              "pageInfo" ->
-                Map(
-                  "hasNextPage" -> true
-                ),
-              "edges" -> List(
-                Map(
-                  "friendshipTime" -> "Yesterday",
-                  "node" -> Map(
-                    "name" -> "Dan",
-                    "pets" -> Map("edges" -> List())
-                  )
-                ),
-                Map(
-                  "friendshipTime" -> "Yesterday",
-                  "node" -> Map(
-                    "name" -> "Nick",
-                    "pets" -> Map(
-                      "edges" -> List(
-                        Map("node" -> Map("name" -> "felix")),
-                        Map("node" -> Map("name" -> "bob", "tails" -> 2))
+        Map(
+          "data" -> Map(
+            "scalars" -> Map("edges" -> List(Map("node" -> "bar"))),
+            "user" -> Map(
+              "friends" -> Map(
+                "totalCount" -> 5,
+                "pageInfo" ->
+                  Map(
+                    "hasNextPage" -> true
+                  ),
+                "edges" -> List(
+                  Map(
+                    "friendshipTime" -> "Yesterday",
+                    "node" -> Map(
+                      "name" -> "Dan",
+                      "pets" -> Map("edges" -> List())
+                    )
+                  ),
+                  Map(
+                    "friendshipTime" -> "Yesterday",
+                    "node" -> Map(
+                      "name" -> "Nick",
+                      "pets" -> Map(
+                        "edges" -> List(
+                          Map("node" -> Map("name" -> "felix")),
+                          Map("node" -> Map("name" -> "bob", "tails" -> 2))
+                        )
                       )
                     )
                   )
                 )
               )
             )
-          )
-        )))
+          )))
     }
 
     "Not allow list node type" in {

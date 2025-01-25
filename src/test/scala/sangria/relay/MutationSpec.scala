@@ -28,7 +28,8 @@ class MutationSpec extends AnyWordSpec with Matchers with AwaitSupport with Resu
 
         Counter(
           id = input(Mutation.ClientMutationIdFieldName).asInstanceOf[Option[String]].get,
-          num = input.get("num").flatMap(_.asInstanceOf[Option[Int]]).getOrElse(1))
+          num = input.get("num").flatMap(_.asInstanceOf[Option[Int]]).getOrElse(1)
+        )
       }
     }
   }

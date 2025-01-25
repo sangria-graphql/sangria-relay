@@ -127,7 +127,8 @@ object StarWarsSchema {
       Field("rebels", OptionType(FactionType), resolve = _.ctx.getRebels),
       Field("empire", OptionType(FactionType), resolve = _.ctx.getEmpire),
       nodeField,
-      nodesField)
+      nodesField
+    )
   )
 
   case class ShipMutationPayload(
