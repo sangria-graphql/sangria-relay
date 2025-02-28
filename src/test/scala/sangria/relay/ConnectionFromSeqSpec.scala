@@ -532,5 +532,25 @@ class ConnectionFromSeqSpec extends AnyWordSpec with Matchers with AwaitSupport 
           List(Edge("D", CursorOfD))
         ))
     }
+
+    "Retruns no elements and proper hasPreviousPage/hasNextPage when cursor out of range" in {
+      connectionFromSeq(
+        List.empty,
+        ConnectionArgs(
+          first = Some(2),
+          // after 10th
+          after = Some("YXJyYXljb25uZWN0aW9uOjEw")
+        ),
+        SliceInfo(10, 4)) should be(
+        DefaultConnection(
+          PageInfo(
+            startCursor = None,
+            endCursor = None,
+            hasPreviousPage = true,
+            hasNextPage = false
+          ),
+          List.empty
+        ))
+    }
   }
 }
