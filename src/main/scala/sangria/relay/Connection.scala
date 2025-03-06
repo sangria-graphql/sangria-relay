@@ -128,65 +128,58 @@ object Connection {
 
     val SliceInfo(sliceStart, arrayLength) = sliceInfo
 
-    val sliceEnd = sliceStart + arraySlice.size
+    val afterOffset = getOffset(after)
+    val beforeOffset = getOffset(before)
 
-    val startOffset = math.max(sliceStart, 0)
-    val endOffset = math.min(sliceEnd, arrayLength)
-
-    val afterOffset = getOffset(after, -1)
-    val (firstEdgeOffset, actualStartOffset) = if (afterOffset >= 0 && afterOffset < arrayLength) {
-      val actualStartOffset = math.max(startOffset, afterOffset + 1)
-      val fEO = afterOffset + 1
-      fEO -> actualStartOffset
-    } else 0 -> startOffset
-
-    val beforeOffset = getOffset(before, arrayLength)
-    val (lastEdgeOffset, actualEndOffset) = if (0 <= beforeOffset && beforeOffset < arrayLength) {
-      val lEO = beforeOffset - 1
-      val actualEndOffset = math.min(endOffset, beforeOffset)
-      lEO -> actualEndOffset
-    } else (arrayLength - 1) -> endOffset
-
-    val numberEdgesAfterCursor = lastEdgeOffset - firstEdgeOffset + 1
-
-    val finalEndOffset =
-      first.fold(actualEndOffset)(f => math.min(actualEndOffset, f + actualStartOffset))
-    val finalStartOffset =
-      last.fold(actualStartOffset)(l => math.max(actualStartOffset, actualEndOffset - l))
-
-    // If supplied slice is too large, trim it down before mapping over it.
-    val slice = arraySlice.slice(
-      math.max(finalStartOffset - sliceStart, 0),
-      arraySlice.size - (sliceEnd - finalEndOffset))
-
-    val edges = slice.zipWithIndex.map { case (value, index) =>
-      Edge(value, offsetToCursor(finalStartOffset + index))
+    // after based on before + last
+    val backwardPaginationAfterMaybe = (beforeOffset, last) match {
+      // (before - last) gives the index of first item to return but after cursor needs to be before it
+      case (Some(before), Some(last)) => Some(before - last - 1)
+      case (_, Some(last)) => Some(arrayLength - last - 1)
+      case _ => None
     }
+    val finalAfterMaybe =
+      Iterable(backwardPaginationAfterMaybe, afterOffset).flatten.reduceOption(_ max _)
 
-    val firstEdge = edges.headOption
-    val lastEdge = edges.lastOption
-
-    val hasPreviousPage = (last, after) match {
-      case (Some(l), _) => numberEdgesAfterCursor > l
-      case (None, Some(_)) => afterOffset >= 0
-      case (_, _) => false
+    // before based on after + first
+    val forwardPaginationBeforeMaybe = (afterOffset, first) match {
+      // (after + first) gives the index of last item to return but before cursor needs to be after it
+      case (Some(after), Some(first)) => Some(after + 1 + first)
+      case (_, Some(first)) => Some(first)
+      case _ => None
     }
+    val finalBeforeMaybe =
+      Iterable(forwardPaginationBeforeMaybe, beforeOffset).flatten.reduceOption(_ min _)
 
-    val hasNextPage = (first, before) match {
-      case (Some(f), _) => numberEdgesAfterCursor > f
-      case (_, Some(_)) => beforeOffset < arrayLength
-      case (_, _) => false
+    // align slice indices with all edges indices
+    val sliceWithIdx = arraySlice.iterator.zipWithIndex.map { case (e, idx) =>
+      (e, idx + sliceStart)
     }
+    val trimmedSlice = sliceWithIdx.filter { case (_, idx) =>
+      finalAfterMaybe.forall(_ < idx) && finalBeforeMaybe.forall(_ > idx)
+    }.toList
 
-    DefaultConnection(
-      PageInfo(
-        hasNextPage,
-        hasPreviousPage,
-        startCursor = firstEdge.map(_.cursor),
-        endCursor = lastEdge.map(_.cursor)
-      ),
-      edges
-    )
+    // If result is empty and first and last are empty then no paging can be done
+    if (trimmedSlice.isEmpty && first.isEmpty && last.isEmpty && before.isEmpty && after.isEmpty)
+      Connection.empty
+    else {
+      val edges = trimmedSlice.map { case (e, idx) => Edge(e, offsetToCursor(idx)) }
+      val pageInfo = PageInfo(
+        hasNextPage = (forwardPaginationBeforeMaybe, beforeOffset) match {
+          case (Some(fpBefore), _) => fpBefore < beforeOffset.getOrElse(arrayLength)
+          case (_, Some(before)) => before < arrayLength
+          case _ => false
+        },
+        hasPreviousPage = (backwardPaginationAfterMaybe, afterOffset) match {
+          case (Some(bpAfter), _) => bpAfter > afterOffset.getOrElse(-1)
+          case (_, Some(after)) => after >= 0
+          case _ => false
+        },
+        startCursor = edges.headOption.map(_.cursor),
+        endCursor = edges.lastOption.map(_.cursor)
+      )
+      DefaultConnection(pageInfo, edges)
+    }
   }
 
   def cursorForObjectInConnection[T, E](coll: Seq[T], obj: E): Option[String] = {
@@ -195,8 +188,8 @@ object Connection {
     if (idx >= 0) Some(offsetToCursor(idx)) else None
   }
 
-  private def getOffset(cursor: Option[String], defaultOffset: Int): Int =
-    cursor.flatMap(cursorToOffset).getOrElse(defaultOffset)
+  private def getOffset(cursor: Option[String]): Option[Int] =
+    cursor.flatMap(cursorToOffset)
 
   def offsetToCursor(offset: Int): String = Base64.encode(CursorPrefix + offset)
 
