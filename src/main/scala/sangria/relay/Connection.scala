@@ -138,8 +138,8 @@ object Connection {
       case (_, Some(last)) => Some(arrayLength - last - 1)
       case _ => None
     }
-    val finalAfterMaybe = List(backwardPaginationAfterMaybe, afterOffset).flatten.reduceOption(_ max _)
-
+    val finalAfterMaybe =
+      Iterable(backwardPaginationAfterMaybe, afterOffset).flatten.reduceOption(_ max _)
 
     // before based on after + first
     val forwardPaginationBeforeMaybe = (afterOffset, first) match {
@@ -148,10 +148,13 @@ object Connection {
       case (_, Some(first)) => Some(first)
       case _ => None
     }
-    val finalBeforeMaybe = List(forwardPaginationBeforeMaybe, beforeOffset).flatten.reduceOption(_ min _)
+    val finalBeforeMaybe =
+      Iterable(forwardPaginationBeforeMaybe, beforeOffset).flatten.reduceOption(_ min _)
 
     // align slice indices with all edges indices
-    val sliceWithIdx = arraySlice.iterator.zipWithIndex.map { case (e, idx) => (e, idx + sliceStart) }
+    val sliceWithIdx = arraySlice.iterator.zipWithIndex.map { case (e, idx) =>
+      (e, idx + sliceStart)
+    }
     val trimmedSlice = sliceWithIdx.filter { case (_, idx) =>
       finalAfterMaybe.forall(_ < idx) && finalBeforeMaybe.forall(_ > idx)
     }.toList
