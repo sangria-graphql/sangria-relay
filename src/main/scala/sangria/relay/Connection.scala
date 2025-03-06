@@ -117,57 +117,58 @@ object Connection {
       arraySlice: Seq[T],
       args: ConnectionArgs,
       sliceInfo: SliceInfo): Connection[T] = {
-    val ConnectionArgs(beforeM, afterM, firstM, lastM) = args
+    val ConnectionArgs(before, after, first, last) = args
 
-    firstM.foreach(f =>
+    first.foreach(f =>
       if (f < 0)
         throw ConnectionArgumentValidationError("Argument 'first' must be a non-negative integer"))
-    lastM.foreach(l =>
+    last.foreach(l =>
       if (l < 0)
         throw ConnectionArgumentValidationError("Argument 'last' must be a non-negative integer"))
 
-    val SliceInfo(sliceOffset, totalItems) = sliceInfo
+    val SliceInfo(sliceStart, arrayLength) = sliceInfo
 
-    val afterOffsetM = getOffset(afterM)
-    val beforeOffsetM = getOffset(beforeM)
+    val afterOffset = getOffset(after)
+    val beforeOffset = getOffset(before)
 
     // after based on before + last
-    val backwardPaginationAfterMaybe = (beforeOffsetM, lastM) match {
+    val backwardPaginationAfterMaybe = (beforeOffset, last) match {
       // (before - last) gives the index of first item to return but after cursor needs to be before it
       case (Some(before), Some(last)) => Some(before - last - 1)
-      case (_, Some(last)) => Some(totalItems - last - 1)
+      case (_, Some(last)) => Some(arrayLength - last - 1)
       case _ => None
     }
-    val finalAfterMaybe = List(backwardPaginationAfterMaybe, afterOffsetM).flatten.maxOption
+    val finalAfterMaybe = List(backwardPaginationAfterMaybe, afterOffset).flatten.reduceOption(_ max _)
+
 
     // before based on after + first
-    val forwardPaginationBeforeMaybe = (afterOffsetM, firstM) match {
+    val forwardPaginationBeforeMaybe = (afterOffset, first) match {
       // (after + first) gives the index of last item to return but before cursor needs to be after it
       case (Some(after), Some(first)) => Some(after + 1 + first)
       case (_, Some(first)) => Some(first)
       case _ => None
     }
-    val finalBeforeMaybe = List(forwardPaginationBeforeMaybe, beforeOffsetM).flatten.minOption
+    val finalBeforeMaybe = List(forwardPaginationBeforeMaybe, beforeOffset).flatten.reduceOption(_ min _)
 
     // align slice indices with all edges indices
-    val sliceWithIdx = arraySlice.zipWithIndex.map { case (e, idx) => (e, idx + sliceOffset) }
+    val sliceWithIdx = arraySlice.iterator.zipWithIndex.map { case (e, idx) => (e, idx + sliceStart) }
     val trimmedSlice = sliceWithIdx.filter { case (_, idx) =>
       finalAfterMaybe.forall(_ < idx) && finalBeforeMaybe.forall(_ > idx)
-    }
+    }.toList
 
-    // If result is empty and firstM and lastM are empty then no paging can be done
-    if (trimmedSlice.isEmpty && firstM.isEmpty && lastM.isEmpty && beforeM.isEmpty && afterM.isEmpty)
+    // If result is empty and first and last are empty then no paging can be done
+    if (trimmedSlice.isEmpty && first.isEmpty && last.isEmpty && before.isEmpty && after.isEmpty)
       Connection.empty
     else {
       val edges = trimmedSlice.map { case (e, idx) => Edge(e, offsetToCursor(idx)) }
       val pageInfo = PageInfo(
-        hasNextPage = (forwardPaginationBeforeMaybe, beforeOffsetM) match {
-          case (Some(fpBefore), _) => fpBefore < beforeOffsetM.getOrElse(totalItems)
-          case (_, Some(before)) => before < totalItems
+        hasNextPage = (forwardPaginationBeforeMaybe, beforeOffset) match {
+          case (Some(fpBefore), _) => fpBefore < beforeOffset.getOrElse(arrayLength)
+          case (_, Some(before)) => before < arrayLength
           case _ => false
         },
-        hasPreviousPage = (backwardPaginationAfterMaybe, afterOffsetM) match {
-          case (Some(bpAfter), _) => bpAfter > afterOffsetM.getOrElse(-1)
+        hasPreviousPage = (backwardPaginationAfterMaybe, afterOffset) match {
+          case (Some(bpAfter), _) => bpAfter > afterOffset.getOrElse(-1)
           case (_, Some(after)) => after >= 0
           case _ => false
         },
